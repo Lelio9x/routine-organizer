@@ -1,30 +1,17 @@
 let selectedDate = "2026-11-24";
 let currentView = "day";
 let editingTaskId = null;
+let schedulingInboxId = null;
 
-let inboxTasks = [
-    { id: 1, title: "Do Laundry", duration: 60, icon: "bi-basket", color: "blue" },
-    { id: 2, title: "Do Homework", duration: 60, icon: "bi-book", color: "green" }
-];
+let inboxTasks = [];
+let routineTasks = [];
 
-let routineTasks = [
-    { id: 101, date: "2026-11-22", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
-    { id: 102, date: "2026-11-22", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: true },
-    { id: 103, date: "2026-11-23", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
-    { id: 104, date: "2026-11-23", startMinutes: 840, duration: 60, title: "Database Study", icon: "bi-diagram-3", color: "green", completed: true },
-    { id: 105, date: "2026-11-23", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: true },
-    { id: 106, date: "2026-11-24", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
-    { id: 107, date: "2026-11-24", startMinutes: 495, duration: 30, title: "Yoga Workout", icon: "bi-heart-pulse", color: "blue", completed: true },
-    { id: 108, date: "2026-11-24", startMinutes: 570, duration: 30, title: "Study Binary Trees", icon: "bi-diagram-3", color: "green", completed: false },
-    { id: 109, date: "2026-11-24", startMinutes: 630, duration: 60, title: "Team Meeting", icon: "bi-people", color: "coral", completed: false },
-    { id: 110, date: "2026-11-24", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: false },
-    { id: 111, date: "2026-11-25", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: false },
-    { id: 112, date: "2026-11-25", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: false },
-    { id: 113, date: "2026-11-26", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: false },
-    { id: 114, date: "2026-11-26", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: false },
-    { id: 115, date: "2026-11-27", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: false },
-    { id: 116, date: "2026-11-28", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: false }
-];
+function formatDateISO(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
 
 function formatMinutes(total) {
     const hours = String(Math.floor(total / 60)).padStart(2, "0");
@@ -43,10 +30,49 @@ function getWeekDates(dateStr) {
     for (let i = 0; i < 7; i++) {
         const d = new Date(sunday);
         d.setDate(sunday.getDate() + i);
-        const iso = d.toISOString().split("T")[0];
-        days.push({ iso, name: names[i], dayNum: d.getDate() });
+        days.push({ iso: formatDateISO(d), name: names[i], dayNum: d.getDate() });
     }
     return days;
+}
+
+function getMonthRange(dateStr) {
+    const base = new Date(dateStr + "T00:00:00");
+    const firstDay = new Date(base.getFullYear(), base.getMonth(), 1);
+    const gridStart = new Date(base.getFullYear(), base.getMonth(), 1 - firstDay.getDay());
+    const gridEnd = new Date(gridStart);
+    gridEnd.setDate(gridStart.getDate() + 34);
+    return {
+        start: formatDateISO(gridStart),
+        end: formatDateISO(gridEnd)
+    };
+}
+
+async function loadRoutineData() {
+    try {
+        const inboxPromise = apiRequest("/routine/inbox");
+        let routinePromise;
+
+        if (currentView === "day") {
+            routinePromise = apiRequest(`/routine/day?date=${selectedDate}`);
+        } else if (currentView === "week") {
+            const weekDays = getWeekDates(selectedDate);
+            routinePromise = apiRequest(
+                `/routine/range?start_date=${weekDays[0].iso}&end_date=${weekDays[6].iso}`
+            );
+        } else {
+            const range = getMonthRange(selectedDate);
+            routinePromise = apiRequest(
+                `/routine/range?start_date=${range.start}&end_date=${range.end}`
+            );
+        }
+
+        const [loadedInbox, loadedRoutine] = await Promise.all([inboxPromise, routinePromise]);
+        inboxTasks = loadedInbox;
+        routineTasks = loadedRoutine;
+        renderAll();
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
 function selectDateAndDayView(isoDate) {
@@ -56,7 +82,7 @@ function selectDateAndDayView(isoDate) {
 
 function setView(view) {
     currentView = view;
-    document.querySelectorAll(".view-btn").forEach(btn => {
+    document.querySelectorAll(".view-btn[data-view]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === view);
     });
 
@@ -65,7 +91,7 @@ function setView(view) {
     document.getElementById("monthView").classList.toggle("d-none", view !== "month");
     document.getElementById("weekStrip").classList.toggle("d-none", view === "month");
 
-    renderAll();
+    loadRoutineData();
 }
 
 function renderHeader() {
@@ -115,7 +141,7 @@ function renderInbox() {
                     <span class="fw-semibold">${task.title}</span>
                 </div>
             </div>
-            <button class="btn btn-sm btn-link text-coral fs-4 p-0" onclick="moveToRoutine(${task.id})">
+            <button class="btn btn-sm btn-link text-coral fs-4 p-0" onclick="openScheduleInboxModal(${task.id})">
                 <i class="bi bi-plus"></i>
             </button>
         </div>
@@ -124,9 +150,7 @@ function renderInbox() {
 
 function renderTimeline() {
     const container = document.getElementById("timelineList");
-    const dayTasks = routineTasks
-        .filter(t => t.date === selectedDate)
-        .sort((a, b) => a.startMinutes - b.startMinutes);
+    const dayTasks = routineTasks.filter(t => t.task_date === selectedDate);
 
     if (dayTasks.length === 0) {
         container.innerHTML = `<p class="text-center text-muted py-5 mb-0">No tasks scheduled for this day yet.</p>`;
@@ -135,9 +159,9 @@ function renderTimeline() {
 
     let html = "";
     dayTasks.forEach((task, index) => {
-        const startStr = formatMinutes(task.startMinutes);
-        const endStr = formatMinutes(task.startMinutes + task.duration);
-        const bgClass = task.completed ? "bg-completed" : `bg-${task.color}`;
+        const startStr = formatMinutes(task.start_minutes);
+        const endStr = formatMinutes(task.start_minutes + task.duration);
+        const bgClass = task.is_completed ? "bg-completed" : `bg-${task.color}`;
 
         html += `
             <div class="timeline-item">
@@ -146,19 +170,19 @@ function renderTimeline() {
                     <div class="icon-circle ${bgClass}">
                         <i class="bi ${task.icon} fs-5"></i>
                     </div>
-                    <div class="flex-grow-1 ${task.completed ? "task-completed" : ""}">
+                    <div class="flex-grow-1 ${task.is_completed ? "task-completed" : ""}">
                         <small class="text-muted d-block">${startStr} - ${endStr} (${task.duration} min)</small>
                         <div class="fw-semibold">${task.title}</div>
                     </div>
                 </div>
-                <button class="check-btn ${task.completed ? "checked" : ""}" onclick="toggleTask(${task.id})">
-                    ${task.completed ? '<i class="bi bi-check"></i>' : ""}
+                <button class="check-btn ${task.is_completed ? "checked" : ""}" onclick="toggleTask(${task.id})">
+                    ${task.is_completed ? '<i class="bi bi-check"></i>' : ""}
                 </button>
             </div>
         `;
 
         if (index < dayTasks.length - 1) {
-            const gap = dayTasks[index + 1].startMinutes - (task.startMinutes + task.duration);
+            const gap = dayTasks[index + 1].start_minutes - (task.start_minutes + task.duration);
             if (gap > 0) {
                 html += `<div class="free-time-gap"><i class="bi bi-clock me-1"></i>${gap} min of free time</div>`;
             }
@@ -178,13 +202,11 @@ function renderWeekView() {
     let maxRequiredHeight = baseHeight;
 
     const preparedDays = weekDays.map(day => {
-        const tasks = routineTasks
-            .filter(t => t.date === day.iso)
-            .sort((a, b) => a.startMinutes - b.startMinutes);
+        const tasks = routineTasks.filter(t => t.task_date === day.iso);
 
         let nextAvailableTop = 35;
         const positionedTasks = tasks.map(t => {
-            const clamped = Math.max(480, Math.min(1320, t.startMinutes));
+            const clamped = Math.max(480, Math.min(1320, t.start_minutes));
             const idealTop = ((clamped - 480) / (1320 - 480)) * (baseHeight - 70) + 35;
             const actualTop = Math.max(idealTop, nextAvailableTop);
             nextAvailableTop = actualTop + minGapPx;
@@ -202,9 +224,9 @@ function renderWeekView() {
 
     const colsHtml = preparedDays.map(day => {
         const nodesHtml = day.tasks.map(t => {
-            const bgClass = t.completed ? "bg-completed" : `bg-${t.color}`;
+            const bgClass = t.is_completed ? "bg-completed" : `bg-${t.color}`;
             return `
-                <div class="week-node ${t.completed ? "completed" : ""}" style="top: ${t.topPx}px;" onclick="selectDateAndDayView('${day.iso}')">
+                <div class="week-node ${t.is_completed ? "completed" : ""}" style="top: ${t.topPx}px;" onclick="selectDateAndDayView('${day.iso}')">
                     <div class="week-node-circle ${bgClass}">
                         <i class="bi ${t.icon}"></i>
                     </div>
@@ -236,8 +258,7 @@ function renderMonthView() {
     const month = base.getMonth();
 
     const firstDay = new Date(year, month, 1);
-    const startOffset = firstDay.getDay();
-    const gridStart = new Date(year, month, 1 - startOffset);
+    const gridStart = new Date(year, month, 1 - firstDay.getDay());
 
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         .map(w => `<div>${w}</div>`).join("");
@@ -246,22 +267,21 @@ function renderMonthView() {
     for (let i = 0; i < 35; i++) {
         const d = new Date(gridStart);
         d.setDate(gridStart.getDate() + i);
-        const iso = d.toISOString().split("T")[0];
+        const iso = formatDateISO(d);
         const isCurrentMonth = d.getMonth() === month;
         const label = isCurrentMonth ? d.getDate() : `${d.toLocaleString("en-US", { month: "short" })} ${d.getDate()}`;
 
         const tasks = routineTasks
-            .filter(t => t.date === iso)
-            .sort((a, b) => a.startMinutes - b.startMinutes)
+            .filter(t => t.task_date === iso)
             .slice(0, 3);
 
         const tasksHtml = tasks.map(t => {
-            const bgClass = t.completed ? "bg-completed" : `bg-${t.color}`;
+            const bgClass = t.is_completed ? "bg-completed" : `bg-${t.color}`;
             return `
-                <div class="month-task-row ${t.completed ? "completed" : ""}">
+                <div class="month-task-row ${t.is_completed ? "completed" : ""}">
                     <span class="month-dot ${bgClass}"><i class="bi ${t.icon}"></i></span>
                     <span class="fw-semibold">${t.title}</span>
-                    <span class="text-muted">${formatMinutes(t.startMinutes)}</span>
+                    <span class="text-muted">${formatMinutes(t.start_minutes)}</span>
                 </div>
             `;
         }).join("");
@@ -289,33 +309,24 @@ function renderAll() {
     renderMonthView();
 }
 
-function toggleTask(id) {
-    const task = routineTasks.find(t => t.id === id);
-    if (task) {
-        task.completed = !task.completed;
-        renderAll();
+async function toggleTask(id) {
+    try {
+        await apiRequest(`/routine/tasks/${id}/toggle`, { method: "PATCH" });
+        await loadRoutineData();
+    } catch (error) {
+        alert(error.message);
     }
 }
 
-function moveToRoutine(id) {
-    const index = inboxTasks.findIndex(t => t.id === id);
-    if (index === -1) return;
-    const item = inboxTasks.splice(index, 1)[0];
-    routineTasks.push({
-        id: Date.now(),
-        date: selectedDate,
-        startMinutes: 720,
-        duration: item.duration,
-        title: item.title,
-        icon: item.icon,
-        color: item.color,
-        completed: false
-    });
-    renderAll();
+function setIconSelectValue(iconValue) {
+    const iconSelect = document.getElementById("taskIcon");
+    const hasIcon = Array.from(iconSelect.options).some(opt => opt.value === iconValue);
+    iconSelect.value = hasIcon ? iconValue : "bi-star";
 }
 
 function openNewTaskModal() {
     editingTaskId = null;
+    schedulingInboxId = null;
     document.getElementById("addTaskForm").reset();
     document.getElementById("taskDate").value = selectedDate;
     document.getElementById("taskDuration").value = 30;
@@ -331,15 +342,13 @@ function openEditTaskModal(id) {
     if (!task) return;
 
     editingTaskId = id;
+    schedulingInboxId = null;
     document.getElementById("taskTitle").value = task.title;
-    document.getElementById("taskDate").value = task.date;
-    document.getElementById("taskTime").value = formatMinutes(task.startMinutes);
+    document.getElementById("taskDate").value = task.task_date;
+    document.getElementById("taskTime").value = formatMinutes(task.start_minutes);
     document.getElementById("taskDuration").value = task.duration;
     document.getElementById("taskColor").value = task.color;
-
-    const iconSelect = document.getElementById("taskIcon");
-    const hasIcon = Array.from(iconSelect.options).some(opt => opt.value === task.icon);
-    iconSelect.value = hasIcon ? task.icon : "bi-star";
+    setIconSelectValue(task.icon);
 
     document.getElementById("taskModalTitle").textContent = "Edit Task";
     document.getElementById("saveTaskBtn").textContent = "Save Changes";
@@ -348,98 +357,123 @@ function openEditTaskModal(id) {
     bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
 }
 
-document.querySelectorAll(".view-btn").forEach(btn => {
+function openScheduleInboxModal(id) {
+    const task = inboxTasks.find(t => t.id === id);
+    if (!task) return;
+
+    editingTaskId = null;
+    schedulingInboxId = id;
+    document.getElementById("taskTitle").value = task.title;
+    document.getElementById("taskDate").value = selectedDate;
+    document.getElementById("taskTime").value = "12:00";
+    document.getElementById("taskDuration").value = task.duration;
+    document.getElementById("taskColor").value = task.color;
+    setIconSelectValue(task.icon);
+
+    document.getElementById("taskModalTitle").textContent = "Schedule Inbox Task";
+    document.getElementById("saveTaskBtn").textContent = "Move to Routine";
+    document.getElementById("deleteTaskBtn").classList.remove("d-none");
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
+}
+
+document.querySelectorAll(".view-btn[data-view]").forEach(btn => {
     btn.addEventListener("click", () => setView(btn.dataset.view));
 });
 
 document.getElementById("prevDateBtn").addEventListener("click", () => {
     const d = new Date(selectedDate + "T00:00:00");
     d.setDate(d.getDate() - (currentView === "month" ? 30 : currentView === "week" ? 7 : 1));
-    selectedDate = d.toISOString().split("T")[0];
-    renderAll();
+    selectedDate = formatDateISO(d);
+    loadRoutineData();
 });
 
 document.getElementById("nextDateBtn").addEventListener("click", () => {
     const d = new Date(selectedDate + "T00:00:00");
     d.setDate(d.getDate() + (currentView === "month" ? 30 : currentView === "week" ? 7 : 1));
-    selectedDate = d.toISOString().split("T")[0];
-    renderAll();
+    selectedDate = formatDateISO(d);
+    loadRoutineData();
 });
 
-document.getElementById("quickInboxForm").addEventListener("submit", (e) => {
+document.getElementById("quickInboxForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const input = document.getElementById("quickInboxInput");
     const title = input.value.trim();
     if (!title) return;
 
-    inboxTasks.push({
-        id: Date.now(),
-        title,
-        duration: 30,
-        icon: "bi-star",
-        color: "coral"
-    });
-    input.value = "";
-    renderInbox();
+    try {
+        await apiRequest("/routine/inbox", {
+            method: "POST",
+            body: JSON.stringify({
+                title,
+                duration: 30,
+                color: "coral",
+                icon: "bi-star"
+            })
+        });
+        input.value = "";
+        await loadRoutineData();
+    } catch (error) {
+        alert(error.message);
+    }
 });
 
-document.getElementById("deleteTaskBtn").addEventListener("click", () => {
-    if (editingTaskId === null) return;
-    routineTasks = routineTasks.filter(t => t.id !== editingTaskId);
-    editingTaskId = null;
-    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
-    renderAll();
+document.getElementById("deleteTaskBtn").addEventListener("click", async () => {
+    const targetId = editingTaskId ?? schedulingInboxId;
+    if (targetId === null) return;
+
+    try {
+        await apiRequest(`/routine/tasks/${targetId}`, { method: "DELETE" });
+        editingTaskId = null;
+        schedulingInboxId = null;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
+        await loadRoutineData();
+    } catch (error) {
+        alert(error.message);
+    }
 });
 
-document.getElementById("addTaskForm").addEventListener("submit", (e) => {
+document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = document.getElementById("taskTitle").value;
-    const date = document.getElementById("taskDate").value;
+    const title = document.getElementById("taskTitle").value.trim();
+    const task_date = document.getElementById("taskDate").value;
     const timeValue = document.getElementById("taskTime").value;
     const duration = parseInt(document.getElementById("taskDuration").value, 10);
     const color = document.getElementById("taskColor").value;
     const icon = document.getElementById("taskIcon").value;
 
     const [hours, mins] = timeValue.split(":").map(Number);
-    const startMinutes = hours * 60 + mins;
+    const start_minutes = hours * 60 + mins;
 
-    const hasConflict = routineTasks.some(
-        t => t.id !== editingTaskId && t.date === date && t.startMinutes === startMinutes
-    );
-
-    if (hasConflict) {
-        alert("Time conflict: another task is already scheduled at this time.");
-        return;
-    }
-
-    if (editingTaskId !== null) {
-        const task = routineTasks.find(t => t.id === editingTaskId);
-        if (task) {
-            task.title = title;
-            task.date = date;
-            task.startMinutes = startMinutes;
-            task.duration = duration;
-            task.color = color;
-            task.icon = icon;
+    try {
+        if (schedulingInboxId !== null) {
+            await apiRequest(`/routine/inbox/${schedulingInboxId}/schedule`, {
+                method: "POST",
+                body: JSON.stringify({ task_date, start_minutes })
+            });
+            await apiRequest(`/routine/tasks/${schedulingInboxId}`, {
+                method: "PUT",
+                body: JSON.stringify({ title, duration, color, icon })
+            });
+            schedulingInboxId = null;
+        } else if (editingTaskId !== null) {
+            await apiRequest(`/routine/tasks/${editingTaskId}`, {
+                method: "PUT",
+                body: JSON.stringify({ title, task_date, start_minutes, duration, color, icon })
+            });
+            editingTaskId = null;
+        } else {
+            await apiRequest("/routine/tasks", {
+                method: "POST",
+                body: JSON.stringify({ title, task_date, start_minutes, duration, color, icon })
+            });
         }
-        editingTaskId = null;
-    } else {
-        routineTasks.push({
-            id: Date.now(),
-            date,
-            startMinutes,
-            duration,
-            title,
-            icon,
-            color,
-            completed: false
-        });
+
+        selectedDate = task_date;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
+        e.target.reset();
+        await loadRoutineData();
+    } catch (error) {
+        alert(error.message);
     }
-
-    selectedDate = date;
-    renderAll();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
-    e.target.reset();
 });
-
-renderAll();

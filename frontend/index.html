@@ -4,97 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Routine Organizer</title>
+    <link rel="manifest" href="manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container-fluid py-3 px-md-4 app-container">
-        <div class="row g-4">
-            <aside class="col-12 col-lg-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge rounded-pill inbox-pill px-3 py-2 fs-6">
-                        <i class="bi bi-inbox-fill me-2"></i>Inbox
-                    </span>
-                    <button class="btn btn-sm btn-outline-secondary rounded-pill d-lg-none" data-bs-toggle="collapse" data-bs-target="#inboxCollapse">
-                        Toggle
-                    </button>
-                </div>
+    <section id="authScreen" class="auth-screen">
+        <div class="auth-card shadow-sm">
+            <div class="text-center mb-4">
+                <span class="badge rounded-pill inbox-pill px-3 py-2 fs-6 mb-2">
+                    <i class="bi bi-calendar2-check me-2"></i>Routine Organizer
+                </span>
+                <p class="text-muted small mb-0">Sign in to access your schedule</p>
+            </div>
 
-                <div class="collapse show d-lg-block" id="inboxCollapse">
-                    <form id="quickInboxForm" class="quick-inbox-box mb-4">
-                        <input type="text" id="quickInboxInput" class="form-control border-0 bg-transparent shadow-none" placeholder="Add a new inbox task..." required>
-                        <button type="submit" class="btn btn-sm quick-add-btn rounded-circle">
-                            <i class="bi bi-plus"></i>
-                        </button>
-                    </form>
+            <div class="view-switcher p-1 rounded-pill d-flex mb-4">
+                <button type="button" id="tabLoginBtn" class="btn btn-sm rounded-pill view-btn active flex-fill">Login</button>
+                <button type="button" id="tabRegisterBtn" class="btn btn-sm rounded-pill view-btn flex-fill">Register</button>
+            </div>
 
-                    <div id="inboxList" class="d-flex flex-column gap-3"></div>
-                </div>
-            </aside>
+            <div id="authError" class="alert alert-danger py-2 small d-none"></div>
 
-            <main class="col-12 col-lg-9">
-                <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <h4 id="headerDateTitle" class="fw-bold mb-0">
-                            November <span class="text-coral">2026</span>
-                        </h4>
-                        <button id="prevDateBtn" class="btn btn-sm btn-link text-secondary p-1">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                        <button id="nextDateBtn" class="btn btn-sm btn-link text-secondary p-1">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
+            <form id="loginForm" class="d-flex flex-column gap-3">
+                <input type="text" id="loginUsername" class="form-control" placeholder="Username" required>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+                <button type="submit" class="btn btn-coral rounded-pill py-2 fw-semibold">Sign In</button>
+            </form>
 
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <div class="view-switcher p-1 rounded-pill d-inline-flex">
-                            <button class="btn btn-sm rounded-pill view-btn active" data-view="day">Day</button>
-                            <button class="btn btn-sm rounded-pill view-btn" data-view="week">Week</button>
-                            <button class="btn btn-sm rounded-pill view-btn" data-view="month">Month</button>
-                        </div>
-
-                        <div id="specialMenu" class="d-flex gap-2">
-                            <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#countdownModal" title="Countdown">
-                                <i class="bi bi-calendar-heart text-coral"></i>
-                            </button>
-                            <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#quizModal" title="Love Declarations">
-                                <i class="bi bi-envelope-heart text-coral"></i>
-                            </button>
-                            <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#romanceModal" title="Romance Quotes">
-                                <i class="bi bi-book-half text-coral"></i>
-                            </button>
-                        </div>
-
-                        <button id="roleToggleBtn" class="btn btn-sm btn-outline-secondary rounded-pill">
-                            Special: ON
-                        </button>
-                        <button id="themeToggleBtn" class="btn btn-icon rounded-circle" title="Toggle Theme">
-                            <i class="bi bi-sun"></i>
-                        </button>
-                    </div>
-                </header>
-
-                <div id="weekStrip" class="week-strip d-flex justify-content-between text-center mb-3 px-2"></div>
-
-                <section id="dayView" class="timeline-card p-4 rounded-4 shadow-sm">
-                    <div id="timelineList" class="timeline-wrapper"></div>
-                </section>
-
-                <section id="weekView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
-                    <div id="weekGridContainer" class="week-grid-scroll"></div>
-                </section>
-
-                <section id="monthView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
-                    <div id="monthGridContainer" class="month-grid-wrapper"></div>
-                </section>
-            </main>
+            <form id="registerForm" class="d-flex flex-column gap-3 d-none">
+                <input type="text" id="registerUsername" class="form-control" placeholder="Username" minlength="3" required>
+                <input type="email" id="registerEmail" class="form-control" placeholder="Email" required>
+                <input type="password" id="registerPassword" class="form-control" placeholder="Password (min 6 chars)" minlength="6" required>
+                <button type="submit" class="btn btn-coral rounded-pill py-2 fw-semibold">Create Account</button>
+            </form>
         </div>
-    </div>
+    </section>
 
-    <button class="btn fab-btn rounded-circle shadow" onclick="openNewTaskModal()">
-        <i class="bi bi-plus-lg fs-4"></i>
-    </button>
+    <div id="appScreen" class="d-none">
+        <div class="container-fluid py-3 px-md-4 app-container">
+            <div class="row g-4">
+                <aside class="col-12 col-lg-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge rounded-pill inbox-pill px-3 py-2 fs-6">
+                            <i class="bi bi-inbox-fill me-2"></i>Inbox
+                        </span>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill d-lg-none" data-bs-toggle="collapse" data-bs-target="#inboxCollapse">
+                            Toggle
+                        </button>
+                    </div>
+
+                    <div class="collapse show d-lg-block" id="inboxCollapse">
+                        <form id="quickInboxForm" class="quick-inbox-box mb-4">
+                            <input type="text" id="quickInboxInput" class="form-control border-0 bg-transparent shadow-none" placeholder="Add a new inbox task..." required>
+                            <button type="submit" class="btn btn-sm quick-add-btn rounded-circle">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </form>
+
+                        <div id="inboxList" class="d-flex flex-column gap-3"></div>
+                    </div>
+                </aside>
+
+                <main class="col-12 col-lg-9">
+                    <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <h4 id="headerDateTitle" class="fw-bold mb-0">
+                                November <span class="text-coral">2026</span>
+                            </h4>
+                            <button id="prevDateBtn" class="btn btn-sm btn-link text-secondary p-1">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button id="nextDateBtn" class="btn btn-sm btn-link text-secondary p-1">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <div class="view-switcher p-1 rounded-pill d-inline-flex">
+                                <button class="btn btn-sm rounded-pill view-btn active" data-view="day">Day</button>
+                                <button class="btn btn-sm rounded-pill view-btn" data-view="week">Week</button>
+                                <button class="btn btn-sm rounded-pill view-btn" data-view="month">Month</button>
+                            </div>
+
+                            <div id="specialMenu" class="d-flex gap-2 d-none">
+                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#countdownModal" title="Countdown">
+                                    <i class="bi bi-calendar-heart text-coral"></i>
+                                </button>
+                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#quizModal" title="Love Declarations">
+                                    <i class="bi bi-envelope-heart text-coral"></i>
+                                </button>
+                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#romanceModal" title="Romance Quotes">
+                                    <i class="bi bi-book-half text-coral"></i>
+                                </button>
+                            </div>
+
+                            <span id="currentUserBadge" class="small text-muted px-2"></span>
+                            <button id="themeToggleBtn" class="btn btn-icon rounded-circle" title="Toggle Theme">
+                                <i class="bi bi-sun"></i>
+                            </button>
+                            <button id="logoutBtn" class="btn btn-icon rounded-circle" title="Sign Out">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div id="weekStrip" class="week-strip d-flex justify-content-between text-center mb-3 px-2"></div>
+
+                    <section id="dayView" class="timeline-card p-4 rounded-4 shadow-sm">
+                        <div id="timelineList" class="timeline-wrapper"></div>
+                    </section>
+
+                    <section id="weekView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
+                        <div id="weekGridContainer" class="week-grid-scroll"></div>
+                    </section>
+
+                    <section id="monthView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
+                        <div id="monthGridContainer" class="month-grid-wrapper"></div>
+                    </section>
+                </main>
+            </div>
+        </div>
+
+        <button class="btn fab-btn rounded-circle shadow" onclick="openNewTaskModal()">
+            <i class="bi bi-plus-lg fs-4"></i>
+        </button>
+    </div>
 
     <div class="modal fade" id="addTaskModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -158,9 +193,54 @@
         </div>
     </div>
 
+    <div class="modal fade" id="countdownModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 text-center p-4">
+                <h5 id="countdownTitle" class="fw-bold mb-2">Until We Meet Again</h5>
+                <div id="countdownDays" class="display-3 fw-bold text-coral my-2">--</div>
+                <p class="text-muted mb-3">days remaining</p>
+                <input type="date" id="nextMeetingDate" class="form-control mx-auto" style="max-width: 200px;">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="quizModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Locked Declaration</h5>
+                    <span id="quizCounter" class="badge rounded-pill text-bg-secondary">0 / 0</span>
+                </div>
+                <p id="quizQuestion" class="mb-3"></p>
+                <div id="quizInputArea">
+                    <input type="text" id="quizAnswer" class="form-control mb-3" placeholder="Your answer...">
+                    <button id="quizSubmitBtn" class="btn btn-coral rounded-pill w-100">Unlock</button>
+                </div>
+                <div id="quizResult" class="mt-3 d-none p-3 rounded-3 bg-body-tertiary"></div>
+                <div class="d-flex justify-content-between mt-3">
+                    <button id="prevQuizBtn" class="btn btn-outline-secondary rounded-pill btn-sm">Previous</button>
+                    <button id="nextQuizBtn" class="btn btn-outline-secondary rounded-pill btn-sm">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="romanceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 p-4 text-center">
+                <h5 class="fw-bold mb-3">Romance Corner</h5>
+                <blockquote id="romanceQuote" class="fst-italic fs-5 mb-2"></blockquote>
+                <small id="romanceAuthor" class="text-muted d-block mb-3"></small>
+                <button id="nextQuoteBtn" class="btn btn-outline-secondary rounded-pill btn-sm">Next Quote</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/routine.js"></script>
     <script src="js/special.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>

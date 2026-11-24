@@ -1,63 +1,136 @@
-const specialMenu = document.getElementById("specialMenu");
-const roleToggleBtn = document.getElementById("roleToggleBtn");
-let isSpecialUser = true;
+let declarationsList = [];
+let currentDeclarationIndex = 0;
+let romanceQuotes = [];
+let currentQuoteIndex = 0;
 
-roleToggleBtn.addEventListener("click", () => {
-    isSpecialUser = !isSpecialUser;
-    specialMenu.classList.toggle("d-none", !isSpecialUser);
-    roleToggleBtn.textContent = isSpecialUser ? "Special Mode: ON" : "Special Mode: OFF";
-});
+async function loadSpecialData() {
+    try {
+        const [countdown, declarations, quotes] = await Promise.all([
+            apiRequest("/countdown/"),
+            apiRequest("/declarations/"),
+            apiRequest("/romance/")
+        ]);
 
-const dateInput = document.getElementById("nextMeetingDate");
-const countdownDays = document.getElementById("countdownDays");
-dateInput.value = "2026-12-20";
+        renderCountdown(countdown);
+        declarationsList = declarations;
+        currentDeclarationIndex = 0;
+        renderDeclaration();
 
-function updateCountdown() {
-    const target = new Date(dateInput.value + "T00:00:00");
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-    countdownDays.textContent = diff >= 0 ? diff : 0;
+        romanceQuotes = quotes;
+        currentQuoteIndex = 0;
+        renderRomanceQuote();
+    } catch (error) {
+        console.error(error.message);
+    }
 }
 
-dateInput.addEventListener("change", updateCountdown);
-updateCountdown();
+function renderCountdown(data) {
+    if (!data) return;
+    document.getElementById("countdownTitle").textContent = data.title;
+    document.getElementById("countdownDays").textContent = data.days_remaining;
+    document.getElementById("nextMeetingDate").value = data.target_date;
+}
 
-const quizData = {
-    question: "In which month do we celebrate our anniversary?",
-    answer: "september",
-    declaration: "Every day with you is my favorite part of the routine."
-};
+function renderDeclaration() {
+    const counter = document.getElementById("quizCounter");
+    const questionEl = document.getElementById("quizQuestion");
+    const inputArea = document.getElementById("quizInputArea");
+    const resultEl = document.getElementById("quizResult");
+    const answerInput = document.getElementById("quizAnswer");
 
-document.getElementById("quizQuestion").textContent = quizData.question;
-document.getElementById("quizSubmitBtn").addEventListener("click", () => {
-    const userAnswer = document.getElementById("quizAnswer").value.trim().toLowerCase();
-    const resultBox = document.getElementById("quizResult");
-    resultBox.classList.remove("d-none");
+    if (declarationsList.length === 0) {
+        counter.textContent = "0 / 0";
+        questionEl.textContent = "No declarations available yet.";
+        inputArea.classList.add("d-none");
+        resultEl.classList.add("d-none");
+        return;
+    }
 
-    if (userAnswer === quizData.answer) {
-        resultBox.textContent = quizData.declaration;
+    const item = declarationsList[currentDeclarationIndex];
+    counter.textContent = `${currentDeclarationIndex + 1} / ${declarationsList.length}`;
+    questionEl.textContent = item.question;
+    answerInput.value = "";
+
+    if (item.is_unlocked) {
+        inputArea.classList.add("d-none");
+        resultEl.textContent = item.content;
+        resultEl.classList.remove("d-none");
     } else {
-        resultBox.textContent = "Not quite! Try again.";
+        inputArea.classList.remove("d-none");
+        resultEl.classList.add("d-none");
+    }
+}
+
+function renderRomanceQuote() {
+    const quoteEl = document.getElementById("romanceQuote");
+    const authorEl = document.getElementById("romanceAuthor");
+
+    if (romanceQuotes.length === 0) {
+        quoteEl.textContent = "No quotes available yet.";
+        authorEl.textContent = "";
+        return;
+    }
+
+    const current = romanceQuotes[currentQuoteIndex];
+    quoteEl.textContent = `"${current.quote}"`;
+    authorEl.textContent = `— ${current.author}, ${current.book_title}`;
+}
+
+document.getElementById("nextMeetingDate").addEventListener("change", async (e) => {
+    const target_date = e.target.value;
+    if (!target_date) return;
+
+    try {
+        const updated = await apiRequest("/countdown/", {
+            method: "PUT",
+            body: JSON.stringify({ target_date })
+        });
+        renderCountdown(updated);
+    } catch (error) {
+        alert(error.message);
     }
 });
 
-const quotes = [
-    { text: "Whatever our souls are made of, his and mine are the same.", author: "Emily Brontë" },
-    { text: "You have bewitched me, body and soul.", author: "Jane Austen" },
-    { text: "I fell in love the way you fall asleep: slowly, and then all at once.", author: "John Green" }
-];
+document.getElementById("quizSubmitBtn").addEventListener("click", async () => {
+    if (declarationsList.length === 0) return;
 
-let quoteIndex = 0;
+    const item = declarationsList[currentDeclarationIndex];
+    const answer = document.getElementById("quizAnswer").value.trim();
+    if (!answer) return;
 
-function renderQuote() {
-    document.getElementById("romanceQuote").textContent = `"${quotes[quoteIndex].text}"`;
-    document.getElementById("romanceAuthor").textContent = `— ${quotes[quoteIndex].author}`;
-}
+    try {
+        const response = await apiRequest(`/declarations/${item.id}/unlock`, {
+            method: "POST",
+            body: JSON.stringify({ answer })
+        });
 
-document.getElementById("nextQuoteBtn").addEventListener("click", () => {
-    quoteIndex = (quoteIndex + 1) % quotes.length;
-    renderQuote();
+        const resultEl = document.getElementById("quizResult");
+        if (response.unlocked) {
+            declarationsList[currentDeclarationIndex] = response.declaration;
+            renderDeclaration();
+        } else {
+            resultEl.textContent = response.message;
+            resultEl.classList.remove("d-none");
+        }
+    } catch (error) {
+        alert(error.message);
+    }
 });
 
-renderQuote();
+document.getElementById("prevQuizBtn").addEventListener("click", () => {
+    if (declarationsList.length === 0) return;
+    currentDeclarationIndex = (currentDeclarationIndex - 1 + declarationsList.length) % declarationsList.length;
+    renderDeclaration();
+});
+
+document.getElementById("nextQuizBtn").addEventListener("click", () => {
+    if (declarationsList.length === 0) return;
+    currentDeclarationIndex = (currentDeclarationIndex + 1) % declarationsList.length;
+    renderDeclaration();
+});
+
+document.getElementById("nextQuoteBtn").addEventListener("click", () => {
+    if (romanceQuotes.length === 0) return;
+    currentQuoteIndex = (currentQuoteIndex + 1) % romanceQuotes.length;
+    renderRomanceQuote();
+});
