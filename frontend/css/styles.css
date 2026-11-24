@@ -388,3 +388,14 @@ body {
     border: none;
     z-index: 1000;
 }
+
+.task-clickable {
+    cursor: pointer;
+    border-radius: 12px;
+    padding: 4px 8px 4px 0;
+    transition: opacity 0.15s;
+}
+
+.task-clickable:hover {
+    opacity: 0.8;
+}

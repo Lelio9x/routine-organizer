@@ -92,7 +92,7 @@
         </div>
     </div>
 
-    <button class="btn fab-btn rounded-circle shadow" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+    <button class="btn fab-btn rounded-circle shadow" onclick="openNewTaskModal()">
         <i class="bi bi-plus-lg fs-4"></i>
     </button>
 
@@ -100,7 +100,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">New Task</h5>
+                    <h5 id="taskModalTitle" class="modal-title fw-bold">New Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="addTaskForm">
@@ -120,50 +120,40 @@
                                 <input type="number" id="taskDuration" class="form-control" value="30" min="5" required>
                             </div>
                         </div>
-                        <select id="taskColor" class="form-select">
-                            <option value="coral">Coral</option>
-                            <option value="blue">Blue</option>
-                            <option value="green">Green</option>
-                        </select>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small">Color</label>
+                                <select id="taskColor" class="form-select">
+                                    <option value="coral">Coral</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="green">Green</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Icon</label>
+                                <select id="taskIcon" class="form-select">
+                                    <option value="bi-star">Star</option>
+                                    <option value="bi-sun-fill">Sun</option>
+                                    <option value="bi-moon-fill">Moon</option>
+                                    <option value="bi-book">Book</option>
+                                    <option value="bi-diagram-3">Study</option>
+                                    <option value="bi-heart-pulse">Health</option>
+                                    <option value="bi-people">Meeting</option>
+                                    <option value="bi-cup-hot">Food / Break</option>
+                                    <option value="bi-basket">Chores</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-footer border-0">
-                        <button type="submit" class="btn btn-coral rounded-pill px-4">Add to Routine</button>
+                    <div class="modal-footer border-0 d-flex justify-content-between">
+                        <button type="button" id="deleteTaskBtn" class="btn btn-outline-danger rounded-pill px-3 d-none">
+                            Delete
+                        </button>
+                        <button type="submit" id="saveTaskBtn" class="btn btn-coral rounded-pill px-4 ms-auto">
+                            Add to Routine
+                        </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="countdownModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 text-center p-4">
-                <h5 class="fw-bold mb-2">Until We Meet Again</h5>
-                <div id="countdownDays" class="display-3 fw-bold text-coral my-2">--</div>
-                <p class="text-muted mb-3">days remaining</p>
-                <input type="date" id="nextMeetingDate" class="form-control mx-auto" style="max-width: 200px;">
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="quizModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 p-4">
-                <h5 class="fw-bold mb-3">Locked Declaration</h5>
-                <p id="quizQuestion" class="mb-3"></p>
-                <input type="text" id="quizAnswer" class="form-control mb-3" placeholder="Your answer...">
-                <button id="quizSubmitBtn" class="btn btn-coral rounded-pill w-100">Unlock</button>
-                <div id="quizResult" class="mt-3 d-none p-3 rounded-3 bg-body-tertiary"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="romanceModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 p-4 text-center">
-                <h5 class="fw-bold mb-3">Romance Corner</h5>
-                <blockquote id="romanceQuote" class="fst-italic fs-5 mb-2"></blockquote>
-                <small id="romanceAuthor" class="text-muted d-block mb-3"></small>
-                <button id="nextQuoteBtn" class="btn btn-outline-secondary rounded-pill btn-sm">Next Quote</button>
             </div>
         </div>
     </div>

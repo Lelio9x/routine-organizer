@@ -1,5 +1,6 @@
 let selectedDate = "2026-11-24";
 let currentView = "day";
+let editingTaskId = null;
 
 let inboxTasks = [
     { id: 1, title: "Do Laundry", duration: 60, icon: "bi-basket", color: "blue" },
@@ -10,7 +11,7 @@ let routineTasks = [
     { id: 101, date: "2026-11-22", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
     { id: 102, date: "2026-11-22", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: true },
     { id: 103, date: "2026-11-23", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
-    { id: 104, date: "2026-11-23", startMinutes: 840, duration: 60, title: "Database Study", icon: "bi-database", color: "green", completed: true },
+    { id: 104, date: "2026-11-23", startMinutes: 840, duration: 60, title: "Database Study", icon: "bi-diagram-3", color: "green", completed: true },
     { id: 105, date: "2026-11-23", startMinutes: 1320, duration: 30, title: "Go to bed", icon: "bi-moon-fill", color: "blue", completed: true },
     { id: 106, date: "2026-11-24", startMinutes: 480, duration: 15, title: "Wake up", icon: "bi-sun-fill", color: "coral", completed: true },
     { id: 107, date: "2026-11-24", startMinutes: 495, duration: 30, title: "Yoga Workout", icon: "bi-heart-pulse", color: "blue", completed: true },
@@ -141,12 +142,14 @@ function renderTimeline() {
         html += `
             <div class="timeline-item">
                 <div class="time-col">${startStr}</div>
-                <div class="icon-circle ${bgClass}">
-                    <i class="bi ${task.icon} fs-5"></i>
-                </div>
-                <div class="flex-grow-1 ${task.completed ? "task-completed" : ""}">
-                    <small class="text-muted d-block">${startStr} - ${endStr} (${task.duration} min)</small>
-                    <div class="fw-semibold">${task.title}</div>
+                <div class="d-flex align-items-center gap-3 flex-grow-1 task-clickable" onclick="openEditTaskModal(${task.id})">
+                    <div class="icon-circle ${bgClass}">
+                        <i class="bi ${task.icon} fs-5"></i>
+                    </div>
+                    <div class="flex-grow-1 ${task.completed ? "task-completed" : ""}">
+                        <small class="text-muted d-block">${startStr} - ${endStr} (${task.duration} min)</small>
+                        <div class="fw-semibold">${task.title}</div>
+                    </div>
                 </div>
                 <button class="check-btn ${task.completed ? "checked" : ""}" onclick="toggleTask(${task.id})">
                     ${task.completed ? '<i class="bi bi-check"></i>' : ""}
@@ -311,6 +314,40 @@ function moveToRoutine(id) {
     renderAll();
 }
 
+function openNewTaskModal() {
+    editingTaskId = null;
+    document.getElementById("addTaskForm").reset();
+    document.getElementById("taskDate").value = selectedDate;
+    document.getElementById("taskDuration").value = 30;
+    document.getElementById("taskModalTitle").textContent = "New Task";
+    document.getElementById("saveTaskBtn").textContent = "Add to Routine";
+    document.getElementById("deleteTaskBtn").classList.add("d-none");
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
+}
+
+function openEditTaskModal(id) {
+    const task = routineTasks.find(t => t.id === id);
+    if (!task) return;
+
+    editingTaskId = id;
+    document.getElementById("taskTitle").value = task.title;
+    document.getElementById("taskDate").value = task.date;
+    document.getElementById("taskTime").value = formatMinutes(task.startMinutes);
+    document.getElementById("taskDuration").value = task.duration;
+    document.getElementById("taskColor").value = task.color;
+
+    const iconSelect = document.getElementById("taskIcon");
+    const hasIcon = Array.from(iconSelect.options).some(opt => opt.value === task.icon);
+    iconSelect.value = hasIcon ? task.icon : "bi-star";
+
+    document.getElementById("taskModalTitle").textContent = "Edit Task";
+    document.getElementById("saveTaskBtn").textContent = "Save Changes";
+    document.getElementById("deleteTaskBtn").classList.remove("d-none");
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
+}
+
 document.querySelectorAll(".view-btn").forEach(btn => {
     btn.addEventListener("click", () => setView(btn.dataset.view));
 });
@@ -339,11 +376,19 @@ document.getElementById("quickInboxForm").addEventListener("submit", (e) => {
         id: Date.now(),
         title,
         duration: 30,
-        icon: "bi-circle",
+        icon: "bi-star",
         color: "coral"
     });
     input.value = "";
     renderInbox();
+});
+
+document.getElementById("deleteTaskBtn").addEventListener("click", () => {
+    if (editingTaskId === null) return;
+    routineTasks = routineTasks.filter(t => t.id !== editingTaskId);
+    editingTaskId = null;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
+    renderAll();
 });
 
 document.getElementById("addTaskForm").addEventListener("submit", (e) => {
@@ -353,29 +398,47 @@ document.getElementById("addTaskForm").addEventListener("submit", (e) => {
     const timeValue = document.getElementById("taskTime").value;
     const duration = parseInt(document.getElementById("taskDuration").value, 10);
     const color = document.getElementById("taskColor").value;
+    const icon = document.getElementById("taskIcon").value;
 
     const [hours, mins] = timeValue.split(":").map(Number);
     const startMinutes = hours * 60 + mins;
 
-    if (routineTasks.some(t => t.date === date && t.startMinutes === startMinutes)) {
+    const hasConflict = routineTasks.some(
+        t => t.id !== editingTaskId && t.date === date && t.startMinutes === startMinutes
+    );
+
+    if (hasConflict) {
         alert("Time conflict: another task is already scheduled at this time.");
         return;
     }
 
-    routineTasks.push({
-        id: Date.now(),
-        date,
-        startMinutes,
-        duration,
-        title,
-        icon: "bi-star",
-        color,
-        completed: false
-    });
+    if (editingTaskId !== null) {
+        const task = routineTasks.find(t => t.id === editingTaskId);
+        if (task) {
+            task.title = title;
+            task.date = date;
+            task.startMinutes = startMinutes;
+            task.duration = duration;
+            task.color = color;
+            task.icon = icon;
+        }
+        editingTaskId = null;
+    } else {
+        routineTasks.push({
+            id: Date.now(),
+            date,
+            startMinutes,
+            duration,
+            title,
+            icon,
+            color,
+            completed: false
+        });
+    }
 
     selectedDate = date;
     renderAll();
-    bootstrap.Modal.getInstance(document.getElementById("addTaskModal")).hide();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
     e.target.reset();
 });
 
