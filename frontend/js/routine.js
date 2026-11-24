@@ -19,13 +19,17 @@ function formatMinutes(total) {
     return `${hours}:${mins}`;
 }
 
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function getWeekDates(dateStr) {
     const base = new Date(dateStr + "T00:00:00");
     const dayOfWeek = base.getDay();
     const sunday = new Date(base);
     sunday.setDate(base.getDate() - dayOfWeek);
 
-    const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const names = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const days = [];
     for (let i = 0; i < 7; i++) {
         const d = new Date(sunday);
@@ -96,12 +100,12 @@ function setView(view) {
 
 function renderHeader() {
     const d = new Date(selectedDate + "T00:00:00");
-    const monthName = d.toLocaleString("en-US", { month: "long" });
+    const monthName = capitalize(d.toLocaleString("pt-BR", { month: "long" }));
     const year = d.getFullYear();
     const day = d.getDate();
 
     document.getElementById("headerDateTitle").innerHTML = currentView === "day"
-        ? `${day}. ${monthName} <span class="text-coral">${year}</span>`
+        ? `${day} de ${monthName} <span class="text-coral">${year}</span>`
         : `${monthName} <span class="text-coral">${year}</span>`;
 
     document.getElementById("taskDate").value = selectedDate;
@@ -125,8 +129,8 @@ function renderInbox() {
         container.innerHTML = `
             <div class="empty-inbox-state">
                 <div class="empty-inbox-icon"><i class="bi bi-inboxes"></i></div>
-                <h6 class="fw-bold mb-1">Your Unstructured Thoughts</h6>
-                <p class="small text-muted mb-0">Capture tasks and thoughts as they come. Move them to your timeline when you are ready to schedule.</p>
+                <h6 class="fw-bold mb-1">Seus Pensamentos Soltos</h6>
+                <p class="small text-muted mb-0">Anote tarefas e ideias conforme surgirem. Mova para a linha do tempo quando estiver pronto para agendar.</p>
             </div>
         `;
         return;
@@ -153,7 +157,7 @@ function renderTimeline() {
     const dayTasks = routineTasks.filter(t => t.task_date === selectedDate);
 
     if (dayTasks.length === 0) {
-        container.innerHTML = `<p class="text-center text-muted py-5 mb-0">No tasks scheduled for this day yet.</p>`;
+        container.innerHTML = `<p class="text-center text-muted py-5 mb-0">Nenhuma tarefa agendada para este dia ainda.</p>`;
         return;
     }
 
@@ -184,7 +188,7 @@ function renderTimeline() {
         if (index < dayTasks.length - 1) {
             const gap = dayTasks[index + 1].start_minutes - (task.start_minutes + task.duration);
             if (gap > 0) {
-                html += `<div class="free-time-gap"><i class="bi bi-clock me-1"></i>${gap} min of free time</div>`;
+                html += `<div class="free-time-gap"><i class="bi bi-clock me-1"></i>${gap} min de tempo livre</div>`;
             }
         }
     });
@@ -260,7 +264,7 @@ function renderMonthView() {
     const firstDay = new Date(year, month, 1);
     const gridStart = new Date(year, month, 1 - firstDay.getDay());
 
-    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
         .map(w => `<div>${w}</div>`).join("");
 
     let cellsHtml = "";
@@ -269,7 +273,8 @@ function renderMonthView() {
         d.setDate(gridStart.getDate() + i);
         const iso = formatDateISO(d);
         const isCurrentMonth = d.getMonth() === month;
-        const label = isCurrentMonth ? d.getDate() : `${d.toLocaleString("en-US", { month: "short" })} ${d.getDate()}`;
+        const shortMonth = capitalize(d.toLocaleString("pt-BR", { month: "short" }).replace(".", ""));
+        const label = isCurrentMonth ? d.getDate() : `${d.getDate()} ${shortMonth}`;
 
         const tasks = routineTasks
             .filter(t => t.task_date === iso)
@@ -330,8 +335,8 @@ function openNewTaskModal() {
     document.getElementById("addTaskForm").reset();
     document.getElementById("taskDate").value = selectedDate;
     document.getElementById("taskDuration").value = 30;
-    document.getElementById("taskModalTitle").textContent = "New Task";
-    document.getElementById("saveTaskBtn").textContent = "Add to Routine";
+    document.getElementById("taskModalTitle").textContent = "Nova Tarefa";
+    document.getElementById("saveTaskBtn").textContent = "Adicionar à Rotina";
     document.getElementById("deleteTaskBtn").classList.add("d-none");
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
@@ -350,8 +355,8 @@ function openEditTaskModal(id) {
     document.getElementById("taskColor").value = task.color;
     setIconSelectValue(task.icon);
 
-    document.getElementById("taskModalTitle").textContent = "Edit Task";
-    document.getElementById("saveTaskBtn").textContent = "Save Changes";
+    document.getElementById("taskModalTitle").textContent = "Editar Tarefa";
+    document.getElementById("saveTaskBtn").textContent = "Salvar Alterações";
     document.getElementById("deleteTaskBtn").classList.remove("d-none");
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();
@@ -370,8 +375,8 @@ function openScheduleInboxModal(id) {
     document.getElementById("taskColor").value = task.color;
     setIconSelectValue(task.icon);
 
-    document.getElementById("taskModalTitle").textContent = "Schedule Inbox Task";
-    document.getElementById("saveTaskBtn").textContent = "Move to Routine";
+    document.getElementById("taskModalTitle").textContent = "Agendar Tarefa";
+    document.getElementById("saveTaskBtn").textContent = "Mover para a Rotina";
     document.getElementById("deleteTaskBtn").classList.remove("d-none");
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).show();

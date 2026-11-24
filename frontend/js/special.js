@@ -40,7 +40,7 @@ function renderDeclaration() {
 
     if (declarationsList.length === 0) {
         counter.textContent = "0 / 0";
-        questionEl.textContent = "No declarations available yet.";
+        questionEl.textContent = "Nenhuma declaração disponível ainda.";
         inputArea.classList.add("d-none");
         resultEl.classList.add("d-none");
         return;
@@ -66,7 +66,7 @@ function renderRomanceQuote() {
     const authorEl = document.getElementById("romanceAuthor");
 
     if (romanceQuotes.length === 0) {
-        quoteEl.textContent = "No quotes available yet.";
+        quoteEl.textContent = "Nenhuma citação disponível ainda.";
         authorEl.textContent = "";
         return;
     }
