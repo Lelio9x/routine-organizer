@@ -47,7 +47,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            detail="Token inválido ou expirado",
         )
 
 
@@ -55,6 +55,6 @@ def require_special_user(current_user: dict = Depends(get_current_user)) -> dict
     if not current_user.get("is_special"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access restricted to special profile",
+            detail="Acesso restrito ao perfil especial",
         )
     return current_user

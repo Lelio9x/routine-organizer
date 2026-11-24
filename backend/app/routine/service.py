@@ -57,7 +57,7 @@ def search_task_by_time(db: Session, user_id: int, task_date: str, start_minutes
     tree = _build_day_tree(db, user_id, task_date)
     task = tree.search(start_minutes)
     if not task:
-        raise AppError("No task scheduled at this time", status.HTTP_404_NOT_FOUND)
+        raise AppError("Nenhuma tarefa agendada neste horário", status.HTTP_404_NOT_FOUND)
     return task
 
 
@@ -66,7 +66,7 @@ def create_routine_task(db: Session, user_id: int, payload: TaskCreate) -> Task:
     inserted = tree.insert(payload.start_minutes, payload)
     if not inserted:
         raise AppError(
-            "Time conflict: another task is already scheduled at this time",
+            "Conflito de horário: já existe outra tarefa agendada neste horário.",
             status.HTTP_409_CONFLICT,
         )
 
@@ -90,7 +90,7 @@ def create_routine_task(db: Session, user_id: int, payload: TaskCreate) -> Task:
 def update_task(db: Session, user_id: int, task_id: int, payload: TaskUpdate) -> Task:
     task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
     if not task:
-        raise AppError("Task not found", status.HTTP_404_NOT_FOUND)
+        raise AppError("Tarefa não encontrada", status.HTTP_404_NOT_FOUND)
 
     new_date = payload.task_date if payload.task_date is not None else task.task_date
     new_minutes = payload.start_minutes if payload.start_minutes is not None else task.start_minutes
@@ -103,7 +103,7 @@ def update_task(db: Session, user_id: int, task_id: int, payload: TaskUpdate) ->
                 target_tree.remove(task.start_minutes)
             if not target_tree.insert(new_minutes, task):
                 raise AppError(
-                    "Time conflict: another task is already scheduled at this time",
+                    "Conflito de horário: já existe outra tarefa agendada neste horário.",
                     status.HTTP_409_CONFLICT,
                 )
 
@@ -130,7 +130,7 @@ def update_task(db: Session, user_id: int, task_id: int, payload: TaskUpdate) ->
 def toggle_task_completion(db: Session, user_id: int, task_id: int) -> Task:
     task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
     if not task:
-        raise AppError("Task not found", status.HTTP_404_NOT_FOUND)
+        raise AppError("Tarefa não encontrada", status.HTTP_404_NOT_FOUND)
 
     task.is_completed = not task.is_completed
     db.commit()
@@ -141,7 +141,7 @@ def toggle_task_completion(db: Session, user_id: int, task_id: int) -> Task:
 def delete_task(db: Session, user_id: int, task_id: int) -> None:
     task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
     if not task:
-        raise AppError("Task not found", status.HTTP_404_NOT_FOUND)
+        raise AppError("Tarefa não encontrada", status.HTTP_404_NOT_FOUND)
 
     if not task.is_inbox and task.task_date and task.start_minutes is not None:
         tree = _build_day_tree(db, user_id, task.task_date)
@@ -189,12 +189,12 @@ def schedule_inbox_task(
         .first()
     )
     if not task:
-        raise AppError("Inbox task not found", status.HTTP_404_NOT_FOUND)
+        raise AppError("Tarefa da caixa de entrada não encontrada", status.HTTP_404_NOT_FOUND)
 
     tree = _build_day_tree(db, user_id, payload.task_date)
     if not tree.insert(payload.start_minutes, task):
         raise AppError(
-            "Time conflict: another task is already scheduled at this time",
+            "Conflito de horário: já existe outra tarefa agendada neste horário.",
             status.HTTP_409_CONFLICT,
         )
 
