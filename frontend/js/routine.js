@@ -136,11 +136,12 @@ function renderTimeline() {
     dayTasks.forEach((task, index) => {
         const startStr = formatMinutes(task.startMinutes);
         const endStr = formatMinutes(task.startMinutes + task.duration);
+        const bgClass = task.completed ? "bg-completed" : `bg-${task.color}`;
 
         html += `
             <div class="timeline-item">
                 <div class="time-col">${startStr}</div>
-                <div class="icon-circle bg-${task.color}">
+                <div class="icon-circle ${bgClass}">
                     <i class="bi ${task.icon} fs-5"></i>
                 </div>
                 <div class="flex-grow-1 ${task.completed ? "task-completed" : ""}">
@@ -168,20 +169,40 @@ function renderWeekView() {
     const container = document.getElementById("weekGridContainer");
     const weekDays = getWeekDates(selectedDate);
     const hours = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+    const baseHeight = 560;
+    const minGapPx = 58;
 
-    const hoursHtml = hours.map(h => `<div>${h}</div>`).join("");
+    let maxRequiredHeight = baseHeight;
 
-    const colsHtml = weekDays.map(day => {
+    const preparedDays = weekDays.map(day => {
         const tasks = routineTasks
             .filter(t => t.date === day.iso)
             .sort((a, b) => a.startMinutes - b.startMinutes);
 
-        const nodesHtml = tasks.map(t => {
+        let nextAvailableTop = 35;
+        const positionedTasks = tasks.map(t => {
             const clamped = Math.max(480, Math.min(1320, t.startMinutes));
-            const percent = ((clamped - 480) / (1320 - 480)) * 88 + 6;
+            const idealTop = ((clamped - 480) / (1320 - 480)) * (baseHeight - 70) + 35;
+            const actualTop = Math.max(idealTop, nextAvailableTop);
+            nextAvailableTop = actualTop + minGapPx;
+            return { ...t, topPx: actualTop };
+        });
+
+        if (nextAvailableTop > maxRequiredHeight) {
+            maxRequiredHeight = nextAvailableTop + 10;
+        }
+
+        return { ...day, tasks: positionedTasks };
+    });
+
+    const hoursHtml = hours.map(h => `<div>${h}</div>`).join("");
+
+    const colsHtml = preparedDays.map(day => {
+        const nodesHtml = day.tasks.map(t => {
+            const bgClass = t.completed ? "bg-completed" : `bg-${t.color}`;
             return `
-                <div class="week-node" style="top: ${percent}%;" onclick="selectDateAndDayView('${day.iso}')">
-                    <div class="week-node-circle bg-${t.color}">
+                <div class="week-node ${t.completed ? "completed" : ""}" style="top: ${t.topPx}px;" onclick="selectDateAndDayView('${day.iso}')">
+                    <div class="week-node-circle ${bgClass}">
                         <i class="bi ${t.icon}"></i>
                     </div>
                     <span class="week-node-label">${t.title}</span>
@@ -190,7 +211,7 @@ function renderWeekView() {
         }).join("");
 
         return `
-            <div class="week-day-col">
+            <div class="week-day-col" style="height: ${maxRequiredHeight}px;">
                 <div class="week-track-line"></div>
                 ${nodesHtml}
             </div>
@@ -199,7 +220,7 @@ function renderWeekView() {
 
     container.innerHTML = `
         <div class="week-grid">
-            <div class="week-hours-col">${hoursHtml}</div>
+            <div class="week-hours-col" style="height: ${maxRequiredHeight}px;">${hoursHtml}</div>
             ${colsHtml}
         </div>
     `;
@@ -231,13 +252,16 @@ function renderMonthView() {
             .sort((a, b) => a.startMinutes - b.startMinutes)
             .slice(0, 3);
 
-        const tasksHtml = tasks.map(t => `
-            <div class="month-task-row">
-                <span class="month-dot bg-${t.color}"><i class="bi ${t.icon}"></i></span>
-                <span class="fw-semibold">${t.title}</span>
-                <span class="text-muted">${formatMinutes(t.startMinutes)}</span>
-            </div>
-        `).join("");
+        const tasksHtml = tasks.map(t => {
+            const bgClass = t.completed ? "bg-completed" : `bg-${t.color}`;
+            return `
+                <div class="month-task-row ${t.completed ? "completed" : ""}">
+                    <span class="month-dot ${bgClass}"><i class="bi ${t.icon}"></i></span>
+                    <span class="fw-semibold">${t.title}</span>
+                    <span class="text-muted">${formatMinutes(t.startMinutes)}</span>
+                </div>
+            `;
+        }).join("");
 
         cellsHtml += `
             <div class="month-cell ${iso === selectedDate ? "active" : ""} ${!isCurrentMonth ? "opacity-50" : ""}" onclick="selectDateAndDayView('${iso}')">
