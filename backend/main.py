@@ -46,6 +46,13 @@ app.include_router(routine_router)
 app.include_router(countdown_router)
 app.include_router(declarations_router)
 app.include_router(romance_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

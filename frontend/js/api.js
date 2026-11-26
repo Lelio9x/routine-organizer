@@ -1,4 +1,11 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+const IS_LOCAL =
+    window.location.protocol === "file:" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "localhost";
+
+const API_BASE_URL = IS_LOCAL
+    ? "http://127.0.0.1:8000"
+    : "https://organizadorrotina.onrender.com";
 
 function getToken() {
     return localStorage.getItem("auth_token");
