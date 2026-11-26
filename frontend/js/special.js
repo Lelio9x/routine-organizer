@@ -3,6 +3,15 @@ let currentDeclarationIndex = 0;
 let romanceQuotes = [];
 let currentQuoteIndex = 0;
 
+function shuffleArray(items) {
+    const list = [...items];
+    for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+}
+
 async function loadSpecialData() {
     try {
         const [countdown, declarations, quotes] = await Promise.all([
@@ -12,11 +21,11 @@ async function loadSpecialData() {
         ]);
 
         renderCountdown(countdown);
-        declarationsList = declarations;
+        declarationsList = shuffleArray(declarations);
         currentDeclarationIndex = 0;
         renderDeclaration();
 
-        romanceQuotes = quotes;
+        romanceQuotes = shuffleArray(quotes);
         currentQuoteIndex = 0;
         renderRomanceQuote();
     } catch (error) {
@@ -87,7 +96,7 @@ document.getElementById("nextMeetingDate").addEventListener("change", async (e) 
         });
         renderCountdown(updated);
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 });
 
@@ -113,7 +122,7 @@ document.getElementById("quizSubmitBtn").addEventListener("click", async () => {
             resultEl.classList.remove("d-none");
         }
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 });
 
@@ -131,6 +140,16 @@ document.getElementById("nextQuizBtn").addEventListener("click", () => {
 
 document.getElementById("nextQuoteBtn").addEventListener("click", () => {
     if (romanceQuotes.length === 0) return;
-    currentQuoteIndex = (currentQuoteIndex + 1) % romanceQuotes.length;
+    const previousId = romanceQuotes[currentQuoteIndex].id;
+    currentQuoteIndex += 1;
+
+    if (currentQuoteIndex >= romanceQuotes.length) {
+        romanceQuotes = shuffleArray(romanceQuotes);
+        if (romanceQuotes.length > 1 && romanceQuotes[0].id === previousId) {
+            [romanceQuotes[0], romanceQuotes[1]] = [romanceQuotes[1], romanceQuotes[0]];
+        }
+        currentQuoteIndex = 0;
+    }
+
     renderRomanceQuote();
 });
