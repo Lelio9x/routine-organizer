@@ -27,16 +27,43 @@
             <div id="authError" class="alert alert-danger py-2 small d-none"></div>
 
             <form id="loginForm" class="d-flex flex-column gap-3">
-                <input type="text" id="loginUsername" class="form-control" placeholder="Usuário" required>
+                <input type="email" id="loginEmail" class="form-control" placeholder="E-mail" required>
                 <input type="password" id="loginPassword" class="form-control" placeholder="Senha" required>
                 <button type="submit" class="btn btn-coral rounded-pill py-2 fw-semibold">Entrar</button>
             </form>
 
             <form id="registerForm" class="d-flex flex-column gap-3 d-none">
-                <input type="text" id="registerUsername" class="form-control" placeholder="Usuário" minlength="3" required>
+                <input type="text" id="registerName" class="form-control" placeholder="Nome" minlength="2" required>
                 <input type="email" id="registerEmail" class="form-control" placeholder="E-mail" required>
-                <input type="password" id="registerPassword" class="form-control" placeholder="Senha (mín. 6 caracteres)" minlength="6" required>
-                <button type="submit" class="btn btn-coral rounded-pill py-2 fw-semibold">Criar Conta</button>
+                <div class="password-input-wrap">
+                    <input type="password" id="registerPassword" class="form-control pe-5" placeholder="Senha" minlength="8" required>
+                    <button type="button" id="toggleRegisterPassword" class="password-toggle-btn" aria-label="Mostrar ou ocultar senha">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <ul id="passwordRequirements" class="password-rules list-unstyled mb-0">
+                    <li class="password-rule" data-rule="length">
+                        <i class="bi bi-circle"></i>
+                        <span>Mínimo de 8 caracteres</span>
+                    </li>
+                    <li class="password-rule" data-rule="upper">
+                        <i class="bi bi-circle"></i>
+                        <span>Pelo menos 1 letra maiúscula</span>
+                    </li>
+                    <li class="password-rule" data-rule="lower">
+                        <i class="bi bi-circle"></i>
+                        <span>Pelo menos 1 letra minúscula</span>
+                    </li>
+                    <li class="password-rule" data-rule="number">
+                        <i class="bi bi-circle"></i>
+                        <span>Pelo menos 1 número</span>
+                    </li>
+                    <li class="password-rule" data-rule="special">
+                        <i class="bi bi-circle"></i>
+                        <span>Pelo menos 1 símbolo (ex: !@#$%)</span>
+                    </li>
+                </ul>
+                <button type="submit" id="registerSubmitBtn" class="btn btn-coral rounded-pill py-2 fw-semibold" disabled>Criar Conta</button>
             </form>
         </div>
     </section>

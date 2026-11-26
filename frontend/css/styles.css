@@ -806,3 +806,57 @@ button,
         right: 1rem;
     }
 }
+
+.password-input-wrap {
+    position: relative;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.password-toggle-btn:hover {
+    color: var(--text-main);
+}
+
+.password-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.85rem;
+    background-color: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+}
+
+.password-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.password-rule i {
+    font-size: 0.78rem;
+}
+
+.password-rule.valid {
+    color: var(--green);
+    font-weight: 500;
+}
+
+#registerSubmitBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}

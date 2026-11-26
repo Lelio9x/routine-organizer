@@ -13,15 +13,15 @@ def seed_database() -> None:
             return
 
         standard_user = User(
-            username="demo",
+            name="demo",
             email="demo@routine.app",
             password_hash=hash_password("demo123"),
             is_special=False,
         )
         special_user = User(
-            username="special",
-            email="special@routine.app",
-            password_hash=hash_password("love123"),
+            name="Maria Fernanda",
+            email="mariafernandaalvesreis944@gmail.com",
+            password_hash=hash_password("Maria123"),
             is_special=True,
         )
         db.add_all([standard_user, special_user])
