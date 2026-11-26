@@ -1,5 +1,5 @@
 const AUTH_API_PREFIX = "/auth";
-const AUTH_TOKEN_KEY = "token";
+const AUTH_TOKEN_KEY = "auth_token";
 
 const authScreen = document.getElementById("authScreen");
 const appScreen = document.getElementById("appScreen");
@@ -71,6 +71,7 @@ function updatePasswordChecklist() {
 }
 
 function enterApp(user) {
+    window.currentUserId = user.id;
     hideAuthError();
     authScreen.classList.add("d-none");
     appScreen.classList.remove("d-none");
@@ -97,6 +98,7 @@ function enterApp(user) {
 }
 
 function exitApp() {
+    window.currentUserId = null;
     localStorage.removeItem(AUTH_TOKEN_KEY);
     appScreen.classList.add("d-none");
     authScreen.classList.remove("d-none");
