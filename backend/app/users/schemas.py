@@ -1,24 +1,24 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class UserRegister(BaseModel):
-    username: str = Field(min_length=3, max_length=50)
-    email: str = Field(min_length=5, max_length=120)
-    password: str = Field(min_length=6, max_length=100)
+cclass UserRegister(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8)
 
 
 class UserLogin(BaseModel):
-    username: str
+    email: EmailStr
     password: str
 
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
-    username: str
-    email: str
+    name: str
+    email: EmailStr
     is_special: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenResponse(BaseModel):
