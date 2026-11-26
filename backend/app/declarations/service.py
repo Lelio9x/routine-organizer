@@ -1,6 +1,7 @@
 from fastapi import status
 from sqlalchemy.orm import Session
 
+from app.core.text import normalize_answer
 from app.declarations.models import Declaration
 from app.declarations.schemas import DeclarationResponse, UnlockResponse
 from app.errors import AppError
@@ -41,8 +42,8 @@ def unlock_declaration(
             declaration=_serialize(declaration),
         )
 
-    normalized_input = answer.strip().lower()
-    normalized_expected = declaration.expected_answer.strip().lower()
+    normalized_input = normalize_answer(answer)
+    normalized_expected = normalize_answer(declaration.expected_answer)
 
     if normalized_input != normalized_expected:
         return UnlockResponse(
