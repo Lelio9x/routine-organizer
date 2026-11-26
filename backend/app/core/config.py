@@ -1,3 +1,5 @@
+import warnings
+
 from pydantic_settings import BaseSettings
 
 
@@ -12,3 +14,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+if settings.secret_key == "change-this-secret-key-in-production":
+    warnings.warn(
+        "SECRET_KEY padrão em uso. Defina uma chave própria no arquivo .env "
+        "antes de publicar o projeto.",
+        stacklevel=2,
+    )

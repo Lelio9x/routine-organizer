@@ -1,10 +1,11 @@
-let selectedDate = "2026-11-24";
+let selectedDate = formatDateISO(new Date());
 let currentView = "day";
 let editingTaskId = null;
 let schedulingInboxId = null;
 
 let inboxTasks = [];
 let routineTasks = [];
+const pendingToggles = new Set();
 
 function formatDateISO(dateObj) {
     const year = dateObj.getFullYear();
@@ -75,7 +76,7 @@ async function loadRoutineData() {
         routineTasks = loadedRoutine;
         renderAll();
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 }
 
@@ -93,7 +94,16 @@ function setView(view) {
     document.getElementById("dayView").classList.toggle("d-none", view !== "day");
     document.getElementById("weekView").classList.toggle("d-none", view !== "week");
     document.getElementById("monthView").classList.toggle("d-none", view !== "month");
-    document.getElementById("weekStrip").classList.toggle("d-none", view === "month");
+
+    const weekStrip = document.getElementById("weekStrip");
+    weekStrip.classList.remove("d-none", "d-flex", "d-lg-flex");
+    if (view === "day") {
+        weekStrip.classList.add("d-flex");
+    } else if (view === "week") {
+        weekStrip.classList.add("d-none", "d-lg-flex");
+    } else {
+        weekStrip.classList.add("d-none");
+    }
 
     loadRoutineData();
 }
@@ -124,6 +134,11 @@ function renderWeekStrip() {
 }
 
 function renderInbox() {
+    const countBadge = document.getElementById("inboxCountBadge");
+    if (countBadge) {
+        countBadge.textContent = inboxTasks.length;
+    }
+
     const container = document.getElementById("inboxList");
     if (inboxTasks.length === 0) {
         container.innerHTML = `
@@ -138,9 +153,9 @@ function renderInbox() {
 
     container.innerHTML = inboxTasks.map(task => `
         <div class="inbox-card shadow-sm">
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3 task-clickable">
                 <i class="bi ${task.icon} fs-5 text-secondary"></i>
-                <div>
+                <div class="task-info">
                     <small class="text-muted d-block">${task.duration} min</small>
                     <span class="fw-semibold">${task.title}</span>
                 </div>
@@ -168,13 +183,13 @@ function renderTimeline() {
         const bgClass = task.is_completed ? "bg-completed" : `bg-${task.color}`;
 
         html += `
-            <div class="timeline-item">
+            <div class="timeline-item" data-task-id="${task.id}">
                 <div class="time-col">${startStr}</div>
                 <div class="d-flex align-items-center gap-3 flex-grow-1 task-clickable" onclick="openEditTaskModal(${task.id})">
                     <div class="icon-circle ${bgClass}">
                         <i class="bi ${task.icon} fs-5"></i>
                     </div>
-                    <div class="flex-grow-1 ${task.is_completed ? "task-completed" : ""}">
+                    <div class="task-info flex-grow-1 ${task.is_completed ? "task-completed" : ""}">
                         <small class="text-muted d-block">${startStr} - ${endStr} (${task.duration} min)</small>
                         <div class="fw-semibold">${task.title}</div>
                     </div>
@@ -194,6 +209,22 @@ function renderTimeline() {
     });
 
     container.innerHTML = html;
+}
+
+function updateTaskItemInDOM(task) {
+    const itemEl = document.querySelector(`.timeline-item[data-task-id="${task.id}"]`);
+    if (!itemEl) return;
+
+    const circleEl = itemEl.querySelector(".icon-circle");
+    const infoEl = itemEl.querySelector(".task-info");
+    const checkBtn = itemEl.querySelector(".check-btn");
+
+    circleEl.classList.remove("bg-completed", "bg-coral", "bg-blue", "bg-green");
+    circleEl.classList.add(task.is_completed ? "bg-completed" : `bg-${task.color}`);
+
+    infoEl.classList.toggle("task-completed", task.is_completed);
+    checkBtn.classList.toggle("checked", task.is_completed);
+    checkBtn.innerHTML = task.is_completed ? '<i class="bi bi-check"></i>' : "";
 }
 
 function renderWeekView() {
@@ -226,6 +257,13 @@ function renderWeekView() {
 
     const hoursHtml = hours.map(h => `<div>${h}</div>`).join("");
 
+    const mobileHeaderHtml = preparedDays.map(day => `
+        <div class="week-mobile-day ${day.iso === selectedDate ? "active" : ""}" onclick="selectDateAndDayView('${day.iso}')">
+            <small class="text-muted">${day.name}</small>
+            <strong>${day.dayNum}</strong>
+        </div>
+    `).join("");
+
     const colsHtml = preparedDays.map(day => {
         const nodesHtml = day.tasks.map(t => {
             const bgClass = t.is_completed ? "bg-completed" : `bg-${t.color}`;
@@ -248,6 +286,10 @@ function renderWeekView() {
     }).join("");
 
     container.innerHTML = `
+        <div class="week-grid-mobile-header d-lg-none">
+            <div></div>
+            ${mobileHeaderHtml}
+        </div>
         <div class="week-grid">
             <div class="week-hours-col" style="height: ${maxRequiredHeight}px;">${hoursHtml}</div>
             ${colsHtml}
@@ -294,7 +336,7 @@ function renderMonthView() {
         cellsHtml += `
             <div class="month-cell ${iso === selectedDate ? "active" : ""} ${!isCurrentMonth ? "opacity-50" : ""}" onclick="selectDateAndDayView('${iso}')">
                 <div class="month-day-badge">${label}</div>
-                ${tasksHtml}
+                <div class="month-cell-tasks">${tasksHtml}</div>
             </div>
         `;
     }
@@ -309,17 +351,36 @@ function renderAll() {
     renderHeader();
     renderWeekStrip();
     renderInbox();
-    renderTimeline();
-    renderWeekView();
-    renderMonthView();
+
+    if (currentView === "day") {
+        renderTimeline();
+    } else if (currentView === "week") {
+        renderWeekView();
+    } else {
+        renderMonthView();
+    }
 }
 
 async function toggleTask(id) {
+    if (pendingToggles.has(id)) return;
+    const task = routineTasks.find(t => t.id === id);
+    if (!task) return;
+
+    pendingToggles.add(id);
+    const previousState = task.is_completed;
+    task.is_completed = !previousState;
+    updateTaskItemInDOM(task);
+
     try {
-        await apiRequest(`/routine/tasks/${id}/toggle`, { method: "PATCH" });
-        await loadRoutineData();
+        const updated = await apiRequest(`/routine/tasks/${id}/toggle`, { method: "PATCH" });
+        task.is_completed = updated.is_completed;
+        updateTaskItemInDOM(task);
     } catch (error) {
-        alert(error.message);
+        task.is_completed = previousState;
+        updateTaskItemInDOM(task);
+        showNotification(error.message);
+    } finally {
+        pendingToggles.delete(id);
     }
 }
 
@@ -419,7 +480,7 @@ document.getElementById("quickInboxForm").addEventListener("submit", async (e) =
         input.value = "";
         await loadRoutineData();
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 });
 
@@ -434,7 +495,7 @@ document.getElementById("deleteTaskBtn").addEventListener("click", async () => {
         bootstrap.Modal.getOrCreateInstance(document.getElementById("addTaskModal")).hide();
         await loadRoutineData();
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 });
 
@@ -479,6 +540,6 @@ document.getElementById("addTaskForm").addEventListener("submit", async (e) => {
         e.target.reset();
         await loadRoutineData();
     } catch (error) {
-        alert(error.message);
+        showNotification(error.message);
     }
 });

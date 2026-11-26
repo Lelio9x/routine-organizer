@@ -1,403 +1,83 @@
-:root {
-    --coral: #f28b82;
-    --pastel-blue: #6b8cae;
-    --pastel-green: #81b266;
-    --bg-app: #f4f5f7;
+:root,
+[data-bs-theme="light"] {
+    --coral: #eb5e55;
+    --coral-hover: #d84b42;
+    --coral-soft: rgba(235, 94, 85, 0.14);
+    --blue: #5b9bd5;
+    --green: #4caf87;
+    --completed: #adb5bd;
+    --bg-page: #f5f6f8;
     --bg-card: #ffffff;
-    --bg-surface: #ebedf0;
-    --border-subtle: rgba(128, 128, 128, 0.2);
-    --completed-bg: #adb5bd;
-    --completed-icon: #ffffff;
+    --bg-soft: #f0f2f5;
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --text-main: #212529;
+    --text-muted: #6c757d;
 }
 
 [data-bs-theme="dark"] {
-    --bg-app: #121214;
-    --bg-card: #1c1c1f;
-    --bg-surface: #26262a;
+    --coral: #eb5e55;
+    --coral-hover: #f2746c;
+    --coral-soft: rgba(235, 94, 85, 0.18);
+    --blue: #5b9bd5;
+    --green: #4caf87;
+    --completed: #495057;
+    --bg-page: #121316;
+    --bg-card: #1c1e24;
+    --bg-soft: #252830;
     --border-subtle: rgba(255, 255, 255, 0.08);
-    --completed-bg: #35363c;
-    --completed-icon: #8e9299;
+    --text-main: #f1f3f5;
+    --text-muted: #9aa0a6;
 }
 
+html,
 body {
-    background-color: var(--bg-app);
-    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-main);
     min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+.day-item,
+.task-clickable,
+.month-cell,
+.week-node {
+    touch-action: manipulation;
 }
 
 .text-coral {
-    color: var(--coral);
+    color: var(--coral) !important;
 }
 
-.inbox-pill {
+.bg-coral {
     background-color: var(--coral);
-    color: #ffffff;
+}
+
+.bg-blue {
+    background-color: var(--blue);
+}
+
+.bg-green {
+    background-color: var(--green);
+}
+
+.bg-completed {
+    background-color: var(--completed);
 }
 
 .btn-coral {
     background-color: var(--coral);
-    color: #ffffff;
-    border: none;
-}
-
-.btn-coral:hover {
-    background-color: #e57373;
+    border-color: var(--coral);
     color: #ffffff;
 }
 
-.btn-icon {
-    width: 38px;
-    height: 38px;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.quick-inbox-box {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 4px 6px 4px 14px;
-    display: flex;
-    align-items: center;
-}
-
-.quick-add-btn {
-    width: 30px;
-    height: 30px;
-    background-color: rgba(242, 139, 130, 0.2);
-    color: var(--coral);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.empty-inbox-state {
-    text-align: center;
-    padding: 3rem 1rem;
-}
-
-.empty-inbox-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background-color: rgba(242, 139, 130, 0.18);
-    color: var(--coral);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.4rem;
-}
-
-.view-switcher {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-}
-
-.view-btn {
-    color: inherit;
-    padding: 4px 14px;
-    font-size: 0.85rem;
-    border: none;
-}
-
-.view-btn.active {
-    background-color: var(--coral);
+.btn-coral:hover,
+.btn-coral:focus,
+.btn-coral:active {
+    background-color: var(--coral-hover);
+    border-color: var(--coral-hover);
     color: #ffffff;
-    font-weight: 600;
-}
-
-.inbox-card,
-.timeline-card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-}
-
-.inbox-card {
-    border-radius: 16px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.day-item {
-    cursor: pointer;
-    padding: 4px 10px;
-}
-
-.day-item .day-num {
-    width: 32px;
-    height: 32px;
-    line-height: 32px;
-    border-radius: 50%;
-    font-weight: 600;
-    margin: 4px auto 0;
-}
-
-.day-item.active .day-num {
-    background-color: var(--coral);
-    color: #ffffff;
-}
-
-.timeline-wrapper {
-    position: relative;
-}
-
-.timeline-wrapper::before {
-    content: "";
-    position: absolute;
-    left: 86px;
-    top: 36px;
-    bottom: 36px;
-    width: 2px;
-    background-color: var(--border-subtle);
-    z-index: 0;
-}
-
-.timeline-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: relative;
-    padding: 14px 0;
-}
-
-.time-col {
-    width: 48px;
-    flex-shrink: 0;
-    font-size: 0.78rem;
-    color: #888;
-    text-align: right;
-}
-
-.icon-circle {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-}
-
-.bg-coral { background-color: var(--coral); }
-.bg-blue { background-color: var(--pastel-blue); }
-.bg-green { background-color: var(--pastel-green); }
-.bg-completed {
-    background-color: var(--completed-bg);
-    color: var(--completed-icon);
-}
-
-.week-node.completed .week-node-label,
-.month-task-row.completed {
-    opacity: 0.5;
-    text-decoration: line-through;
-}
-
-.task-completed {
-    text-decoration: line-through;
-    opacity: 0.55;
-}
-
-.check-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 2px solid var(--coral);
-    background: transparent;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.check-btn.checked {
-    background-color: var(--coral);
-}
-
-.free-time-gap {
-    margin-left: 126px;
-    padding: 6px 0;
-    font-size: 0.82rem;
-    color: var(--coral);
-}
-
-.week-grid-scroll {
-    overflow-x: auto;
-}
-
-.week-grid {
-    display: grid;
-    grid-template-columns: 54px repeat(7, minmax(110px, 1fr));
-    min-width: 820px;
-}
-
-.week-hours-col {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 12px 8px 12px 0;
-    font-size: 0.72rem;
-    color: #888;
-    text-align: right;
-    height: 560px;
-}
-
-.week-day-col {
-    position: relative;
-    height: 560px;
-    border-left: 1px solid var(--border-subtle);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.week-track-line {
-    position: absolute;
-    top: 24px;
-    bottom: 24px;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--coral), var(--pastel-blue));
-    opacity: 0.55;
-}
-
-.week-node {
-    position: absolute;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform: translateY(-50%);
-    cursor: pointer;
-}
-
-.week-node-circle {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-size: 0.85rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.week-node-label {
-    font-size: 0.68rem;
-    margin-top: 2px;
-    background-color: var(--bg-card);
-    padding: 1px 6px;
-    border-radius: 8px;
-    white-space: nowrap;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.month-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-    padding-bottom: 8px;
-}
-
-.month-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    border-top: 1px solid var(--border-subtle);
-    border-left: 1px solid var(--border-subtle);
-}
-
-.month-cell {
-    min-height: 112px;
-    padding: 8px;
-    border-right: 1px solid var(--border-subtle);
-    border-bottom: 1px solid var(--border-subtle);
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.month-cell:hover {
-    background-color: rgba(242, 139, 130, 0.06);
-}
-
-.month-cell.active {
-    background-color: rgba(242, 139, 130, 0.12);
-}
-
-.month-day-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-size: 0.78rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.month-cell.active .month-day-badge {
-    background-color: var(--coral);
-    color: #ffffff;
-}
-
-.month-task-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.72rem;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.month-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    color: #ffffff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    flex-shrink: 0;
-}
-
-.fab-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    background-color: var(--coral);
-    color: #ffffff;
-    border: none;
-    z-index: 1000;
-}
-
-.task-clickable {
-    cursor: pointer;
-    border-radius: 12px;
-    padding: 4px 8px 4px 0;
-    transition: opacity 0.15s;
-}
-
-.task-clickable:hover {
-    opacity: 0.8;
 }
 
 .auth-screen {
@@ -413,6 +93,716 @@ body {
     max-width: 400px;
     background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
+    border-radius: 1.5rem;
     padding: 2rem;
+}
+
+.app-container {
+    max-width: 1400px;
+    padding-bottom: 5rem;
+}
+
+.inbox-pill {
+    background-color: var(--coral);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.inbox-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.quick-inbox-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0.35rem 0.45rem 0.35rem 0.85rem;
+}
+
+.quick-add-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--coral-soft);
+    color: var(--coral);
+    border: none;
+}
+
+.quick-add-btn:hover {
+    background-color: var(--coral);
+    color: #ffffff;
+}
+
+.empty-inbox-state {
+    text-align: center;
+    padding: 2rem 1.25rem;
+    background-color: var(--bg-card);
+    border: 1px dashed var(--border-subtle);
+    border-radius: 1.25rem;
+}
+
+.empty-inbox-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    background-color: var(--coral-soft);
+    color: var(--coral);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.inbox-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+}
+
+.view-switcher {
+    background-color: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+}
+
+.view-btn {
+    color: var(--text-muted);
+    border: none !important;
+    font-weight: 500;
+    padding: 0.35rem 0.9rem;
+}
+
+.view-btn:hover {
+    color: var(--text-main);
+}
+
+.view-btn.active {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+}
+
+.btn-icon:hover {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+}
+
+.week-strip {
+    gap: 0.5rem;
+}
+
+.day-item {
+    flex: 1;
+    padding: 0.5rem 0.25rem;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.day-item:hover {
+    background-color: var(--bg-soft);
+}
+
+.day-num {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    margin: 0.25rem auto 0;
+    border-radius: 50%;
+    font-weight: 600;
+}
+
+.day-item.active .day-num {
+    background-color: var(--coral);
+    color: #ffffff;
+}
+
+.timeline-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+}
+
+.timeline-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.time-col {
+    min-width: 52px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.task-clickable {
+    min-width: 0;
+    cursor: pointer;
+}
+
+.task-info {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.icon-circle {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.task-completed {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+.check-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border-subtle);
+    background: transparent;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.check-btn.checked {
+    background-color: var(--coral);
+    border-color: var(--coral);
+}
+
+.icon-circle,
+.check-btn,
+.task-info {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+}
+
+.check-btn:active {
+    transform: scale(0.9);
+}
+
+.free-time-gap {
+    margin-left: 68px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.15rem 0;
+}
+
+.week-grid-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    position: relative;
+}
+
+.week-hours-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 28px 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.week-day-col {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.week-track-line {
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    width: 2px;
+    background-color: var(--border-subtle);
+}
+
+.week-node {
+    position: absolute;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    z-index: 2;
+    max-width: 92%;
+}
+
+.week-node.completed {
+    opacity: 0.6;
+}
+
+.week-node-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.week-node-label {
+    margin-top: 3px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    max-width: 88px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: var(--bg-card);
+    padding: 0 4px;
+    border-radius: 6px;
+}
+
+.week-grid-mobile-header {
+    display: grid;
+    grid-template-columns: 52px repeat(7, minmax(96px, 1fr));
+    min-width: 724px;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.week-mobile-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0.35rem 0.25rem;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.week-mobile-day.active {
+    background-color: var(--coral-soft);
+    color: var(--coral);
+}
+
+.week-mobile-day small {
+    font-size: 0.72rem;
+}
+
+.week-mobile-day strong {
+    font-size: 0.92rem;
+}
+
+.month-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.4rem;
+}
+
+.month-cell {
+    min-height: 105px;
+    padding: 0.5rem;
+    border-radius: 0.85rem;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-soft);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.month-cell:hover {
+    border-color: var(--coral);
+}
+
+.month-cell.active {
+    border-color: var(--coral);
+    background-color: var(--coral-soft);
+}
+
+.month-day-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.month-cell-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.month-task-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.74rem;
+    padding: 2px 4px;
+    border-radius: 6px;
+    background-color: var(--bg-card);
+    overflow: hidden;
+}
+
+.month-task-row.completed {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+.month-task-row .fw-semibold {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.month-dot {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+}
+
+.fab-btn {
+    position: fixed;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    width: 56px;
+    height: 56px;
+    background-color: var(--coral);
+    color: #ffffff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1040;
+}
+
+.fab-btn:hover {
+    background-color: var(--coral-hover);
+    color: #ffffff;
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+}
+
+#feedbackModal {
+    z-index: 1080;
+}
+
+.feedback-modal-content {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+}
+
+.feedback-icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.feedback-error {
+    background-color: rgba(235, 94, 85, 0.15);
+    color: #eb5e55;
+}
+
+.feedback-success {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+@media (max-width: 991.98px) {
+    .app-container {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+
+    .week-grid {
+        grid-template-columns: 52px repeat(7, minmax(96px, 1fr));
+        min-width: 724px;
+    }
+
+    .week-hours-col {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background-color: var(--bg-card);
+        padding-right: 0.35rem;
+    }
+
+    .month-cell {
+        min-height: 92px;
+        padding: 0.4rem;
+    }
+
+    .month-task-row {
+        font-size: 0.72rem;
+    }
+
+    .fab-btn {
+        bottom: calc(1.25rem + env(safe-area-inset-bottom));
+        right: 1.25rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .header-controls {
+        width: 100%;
+    }
+
+    .month-cell {
+        min-height: 76px;
+        padding: 0.35rem 0.25rem;
+    }
+
+    .month-task-row .text-muted {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    .auth-screen {
+        padding: 1rem;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 1.5rem 1.25rem;
+    }
+
+    #headerDateTitle {
+        font-size: 1.15rem;
+    }
+
+    .header-controls {
+        gap: 0.6rem;
+    }
+
+    .header-controls .view-switcher {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    .header-controls .view-switcher .view-btn {
+        flex: 1;
+        text-align: center;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .btn-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .week-strip {
+        gap: 0.2rem;
+    }
+
+    .day-item {
+        flex: 1;
+        min-width: 0;
+        padding: 0.45rem 0.15rem;
+    }
+
+    .day-item small {
+        font-size: 0.7rem;
+    }
+
+    .day-num {
+        font-size: 0.9rem;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin: 0.2rem auto 0;
+    }
+
+    .timeline-item {
+        gap: 0.65rem;
+    }
+
+    .time-col {
+        min-width: 44px;
+        font-size: 0.8rem;
+    }
+
+    .icon-circle {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 0.95rem;
+    }
+
+    .icon-circle i {
+        font-size: 1rem !important;
+    }
+
+    .task-info small {
+        font-size: 0.74rem;
+    }
+
+    .task-info .fw-semibold {
+        font-size: 0.92rem;
+    }
+
+    .check-btn {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+    }
+
+    .free-time-gap {
+        margin-left: 52px;
+        font-size: 0.75rem;
+    }
+
+    .inbox-card {
+        padding: 0.75rem 0.85rem;
+    }
+
+    .month-weekdays {
+        font-size: 0.74rem;
+    }
+
+    .month-cell {
+        min-height: 62px;
+        padding: 0.3rem 0.15rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .month-day-badge {
+        font-size: 0.76rem;
+        margin-bottom: 0;
+    }
+
+    .month-cell-tasks {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .month-task-row {
+        padding: 0;
+        background: transparent;
+    }
+
+    .month-task-row span:not(.month-dot) {
+        display: none;
+    }
+
+    .month-dot {
+        width: 8px;
+        height: 8px;
+        min-width: 8px;
+        border-radius: 50%;
+    }
+
+    .month-dot i {
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 0.75rem;
+    }
+
+    .modal-content {
+        max-height: 88dvh;
+        overflow-y: auto;
+    }
+
+    #romanceQuote {
+        font-size: 1.05rem !important;
+    }
+
+    .fab-btn {
+        width: 52px;
+        height: 52px;
+        bottom: calc(1rem + env(safe-area-inset-bottom));
+        right: 1rem;
+    }
 }

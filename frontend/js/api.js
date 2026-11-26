@@ -53,3 +53,26 @@ async function apiRequest(endpoint, options = {}) {
 
     return data;
 }
+
+function showNotification(message, title = "Atenção", type = "error") {
+    const modalEl = document.getElementById("feedbackModal");
+    if (!modalEl) return;
+
+    const titleEl = document.getElementById("feedbackModalTitle");
+    const messageEl = document.getElementById("feedbackModalMessage");
+    const iconBox = document.getElementById("feedbackModalIcon");
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    iconBox.classList.remove("feedback-error", "feedback-success");
+    if (type === "success") {
+        iconBox.classList.add("feedback-success");
+        iconBox.innerHTML = '<i class="bi bi-check-lg"></i>';
+    } else {
+        iconBox.classList.add("feedback-error");
+        iconBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>';
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}

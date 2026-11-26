@@ -1,10 +1,44 @@
+import re
+import unicodedata
+from difflib import SequenceMatcher
+
 from fastapi import status
 from sqlalchemy.orm import Session
 
-from app.core.text import normalize_answer
 from app.declarations.models import Declaration
 from app.declarations.schemas import DeclarationResponse, UnlockResponse
 from app.errors import AppError
+
+
+def _normalize_text(text: str) -> str:
+    decomposed = unicodedata.normalize("NFD", text)
+    without_accents = "".join(
+        ch for ch in decomposed if unicodedata.category(ch) != "Mn"
+    )
+    cleaned = re.sub(r"[^a-z0-9\s/]", " ", without_accents.lower())
+    return " ".join(cleaned.split())
+
+
+def _is_answer_valid(user_answer: str, expected_answers: str) -> bool:
+    normalized_input = _normalize_text(user_answer)
+    if not normalized_input:
+        return False
+
+    accepted_list = [_normalize_text(opt) for opt in expected_answers.split("|")]
+    for expected in accepted_list:
+        if not expected:
+            continue
+        if normalized_input == expected:
+            return True
+        has_digits = any(ch.isdigit() for ch in expected) or any(
+            ch.isdigit() for ch in normalized_input
+        )
+        if not has_digits and len(expected) >= 5:
+            similarity = SequenceMatcher(None, normalized_input, expected).ratio()
+            if similarity >= 0.80:
+                return True
+
+    return False
 
 
 def _serialize(declaration: Declaration) -> DeclarationResponse:
@@ -42,10 +76,7 @@ def unlock_declaration(
             declaration=_serialize(declaration),
         )
 
-    normalized_input = normalize_answer(answer)
-    normalized_expected = normalize_answer(declaration.expected_answer)
-
-    if normalized_input != normalized_expected:
+    if not _is_answer_valid(answer, declaration.expected_answer):
         return UnlockResponse(
             unlocked=False,
             message="Resposta incorreta. Tente novamente.",

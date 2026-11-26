@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.routine import service
 from app.routine.schemas import (
+    FreeSlotResponse,
     InboxTaskCreate,
     ScheduleInboxRequest,
     TaskCreate,
@@ -32,6 +33,15 @@ def list_range_routine(
     db: Session = Depends(get_db),
 ):
     return service.get_range_routine(db, current_user["user_id"], start_date, end_date)
+
+
+@router.get("/free-time", response_model=list[FreeSlotResponse])
+def list_free_time(
+    date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return service.get_free_time(db, current_user["user_id"], date)
 
 
 @router.get("/search", response_model=TaskResponse)

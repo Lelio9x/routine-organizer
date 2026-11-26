@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Organizador de Rotina</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -42,22 +42,24 @@
     </section>
 
     <div id="appScreen" class="d-none">
-        <div class="container-fluid py-3 px-md-4 app-container">
-            <div class="row g-4">
+        <div class="container-fluid py-3 px-3 px-md-4 app-container">
+            <div class="row g-3 g-lg-4">
                 <aside class="col-12 col-lg-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge rounded-pill inbox-pill px-3 py-2 fs-6">
-                            <i class="bi bi-inbox-fill me-2"></i>Caixa de Entrada
+                        <span class="badge rounded-pill inbox-pill px-3 py-2 fs-6 d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-inbox-fill"></i>
+                            <span>Caixa de Entrada</span>
+                            <span id="inboxCountBadge" class="inbox-count-badge">0</span>
                         </span>
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill d-lg-none" data-bs-toggle="collapse" data-bs-target="#inboxCollapse">
-                            Alternar
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill d-lg-none px-3" type="button" data-bs-toggle="collapse" data-bs-target="#inboxCollapse" aria-expanded="false" aria-controls="inboxCollapse">
+                            <i class="bi bi-chevron-down me-1"></i>Ver
                         </button>
                     </div>
 
-                    <div class="collapse show d-lg-block" id="inboxCollapse">
-                        <form id="quickInboxForm" class="quick-inbox-box mb-4">
+                    <div class="collapse d-lg-block" id="inboxCollapse">
+                        <form id="quickInboxForm" class="quick-inbox-box mb-3 mb-lg-4">
                             <input type="text" id="quickInboxInput" class="form-control border-0 bg-transparent shadow-none" placeholder="Adicionar tarefa rápida..." required>
-                            <button type="submit" class="btn btn-sm quick-add-btn rounded-circle">
+                            <button type="submit" class="btn btn-sm quick-add-btn rounded-circle" aria-label="Adicionar">
                                 <i class="bi bi-plus"></i>
                             </button>
                         </form>
@@ -67,66 +69,70 @@
                 </aside>
 
                 <main class="col-12 col-lg-9">
-                    <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <h4 id="headerDateTitle" class="fw-bold mb-0">
-                                Novembro <span class="text-coral">2026</span>
-                            </h4>
-                            <button id="prevDateBtn" class="btn btn-sm btn-link text-secondary p-1">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-                            <button id="nextDateBtn" class="btn btn-sm btn-link text-secondary p-1">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
+                    <header class="app-header d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 gap-md-3 mb-3">
+                        <div class="d-flex align-items-center justify-content-between justify-content-md-start gap-2">
+                            <div class="d-flex align-items-center gap-1 gap-sm-2">
+                                <h4 id="headerDateTitle" class="fw-bold mb-0">
+                                    Novembro <span class="text-coral">2026</span>
+                                </h4>
+                                <button id="prevDateBtn" class="btn btn-sm btn-link text-secondary p-1" aria-label="Data anterior">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button id="nextDateBtn" class="btn btn-sm btn-link text-secondary p-1" aria-label="Próxima data">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="header-controls d-flex flex-wrap justify-content-between justify-content-md-end align-items-center gap-2">
                             <div class="view-switcher p-1 rounded-pill d-inline-flex">
                                 <button class="btn btn-sm rounded-pill view-btn active" data-view="day">Dia</button>
                                 <button class="btn btn-sm rounded-pill view-btn" data-view="week">Semana</button>
                                 <button class="btn btn-sm rounded-pill view-btn" data-view="month">Mês</button>
                             </div>
 
-                            <div id="specialMenu" class="d-flex gap-2 d-none">
-                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#countdownModal" title="Contagem Regressiva">
-                                    <i class="bi bi-calendar-heart text-coral"></i>
+                            <div class="header-actions d-flex align-items-center gap-1 gap-sm-2">
+                                <div id="specialMenu" class="d-flex gap-1 gap-sm-2 d-none">
+                                    <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#countdownModal" title="Contagem Regressiva">
+                                        <i class="bi bi-calendar-heart text-coral"></i>
+                                    </button>
+                                    <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#quizModal" title="Declarações">
+                                        <i class="bi bi-envelope-heart text-coral"></i>
+                                    </button>
+                                    <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#romanceModal" title="Cantinho do Romance">
+                                        <i class="bi bi-book-half text-coral"></i>
+                                    </button>
+                                </div>
+
+                                <span id="currentUserBadge" class="small text-muted px-2 d-none d-xl-inline"></span>
+                                <button id="themeToggleBtn" class="btn btn-icon rounded-circle" title="Alternar Tema">
+                                    <i class="bi bi-sun"></i>
                                 </button>
-                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#quizModal" title="Declarações">
-                                    <i class="bi bi-envelope-heart text-coral"></i>
-                                </button>
-                                <button class="btn btn-icon rounded-circle" data-bs-toggle="modal" data-bs-target="#romanceModal" title="Cantinho do Romance">
-                                    <i class="bi bi-book-half text-coral"></i>
+                                <button id="logoutBtn" class="btn btn-icon rounded-circle" title="Sair">
+                                    <i class="bi bi-box-arrow-right"></i>
                                 </button>
                             </div>
-
-                            <span id="currentUserBadge" class="small text-muted px-2"></span>
-                            <button id="themeToggleBtn" class="btn btn-icon rounded-circle" title="Alternar Tema">
-                                <i class="bi bi-sun"></i>
-                            </button>
-                            <button id="logoutBtn" class="btn btn-icon rounded-circle" title="Sair">
-                                <i class="bi bi-box-arrow-right"></i>
-                            </button>
                         </div>
                     </header>
 
-                    <div id="weekStrip" class="week-strip d-flex justify-content-between text-center mb-3 px-2"></div>
+                    <div id="weekStrip" class="week-strip d-flex justify-content-between text-center mb-3 px-1 px-md-2"></div>
 
-                    <section id="dayView" class="timeline-card p-4 rounded-4 shadow-sm">
+                    <section id="dayView" class="timeline-card p-3 p-md-4 rounded-4 shadow-sm">
                         <div id="timelineList" class="timeline-wrapper"></div>
                     </section>
 
-                    <section id="weekView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
+                    <section id="weekView" class="timeline-card p-2 p-md-3 rounded-4 shadow-sm d-none">
                         <div id="weekGridContainer" class="week-grid-scroll"></div>
                     </section>
 
-                    <section id="monthView" class="timeline-card p-3 rounded-4 shadow-sm d-none">
+                    <section id="monthView" class="timeline-card p-2 p-md-3 rounded-4 shadow-sm d-none">
                         <div id="monthGridContainer" class="month-grid-wrapper"></div>
                     </section>
                 </main>
             </div>
         </div>
 
-        <button class="btn fab-btn rounded-circle shadow" onclick="openNewTaskModal()">
+        <button class="btn fab-btn rounded-circle shadow" onclick="openNewTaskModal()" aria-label="Nova Tarefa">
             <i class="bi bi-plus-lg fs-4"></i>
         </button>
     </div>
@@ -146,17 +152,17 @@
                             <input type="date" id="taskDate" class="form-control" required>
                         </div>
                         <div class="row g-2">
-                            <div class="col-6">
+                            <div class="col-12 col-sm-6">
                                 <label class="form-label small">Horário de Início</label>
                                 <input type="time" id="taskTime" class="form-control" required>
                             </div>
-                            <div class="col-6">
+                            <div class="col-12 col-sm-6">
                                 <label class="form-label small">Duração (min)</label>
                                 <input type="number" id="taskDuration" class="form-control" value="30" min="5" required>
                             </div>
                         </div>
                         <div class="row g-2">
-                            <div class="col-6">
+                            <div class="col-12 col-sm-6">
                                 <label class="form-label small">Cor</label>
                                 <select id="taskColor" class="form-select">
                                     <option value="coral">Coral</option>
@@ -164,7 +170,7 @@
                                     <option value="green">Verde</option>
                                 </select>
                             </div>
-                            <div class="col-6">
+                            <div class="col-12 col-sm-6">
                                 <label class="form-label small">Ícone</label>
                                 <select id="taskIcon" class="form-select">
                                     <option value="bi-star">Estrela</option>
@@ -180,7 +186,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 d-flex justify-content-between">
+                    <div class="modal-footer border-0 d-flex justify-content-between gap-2">
                         <button type="button" id="deleteTaskBtn" class="btn btn-outline-danger rounded-pill px-3 d-none">
                             Excluir
                         </button>
@@ -232,6 +238,21 @@
                 <blockquote id="romanceQuote" class="fst-italic fs-5 mb-2"></blockquote>
                 <small id="romanceAuthor" class="text-muted d-block mb-3"></small>
                 <button id="nextQuoteBtn" class="btn btn-outline-secondary rounded-pill btn-sm">Próxima Citação</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="feedbackModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content feedback-modal-content rounded-4 text-center p-4">
+                <div id="feedbackModalIcon" class="feedback-icon-box feedback-error mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <h5 id="feedbackModalTitle" class="fw-bold mb-2">Atenção</h5>
+                <p id="feedbackModalMessage" class="text-muted small mb-4"></p>
+                <button type="button" class="btn btn-coral rounded-pill w-100 fw-semibold" data-bs-dismiss="modal">
+                    Entendi
+                </button>
             </div>
         </div>
     </div>
