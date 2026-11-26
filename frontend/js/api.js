@@ -5,7 +5,7 @@ const IS_LOCAL =
 
 const API_BASE_URL = IS_LOCAL
     ? "http://127.0.0.1:8000"
-    : "https://organizadorrotina.onrender.com";
+    : "https://routine-organizer-1.onrender.com";
 
 function getToken() {
     return localStorage.getItem("auth_token");
